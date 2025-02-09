@@ -20,9 +20,9 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class Simple4Test {
+class SimpleTest {
 
-    private final static Logger logger = LogManager.getLogger(Simple4Test.class);
+    private final static Logger logger = LogManager.getLogger(SimpleTest.class);
 
     static {
         Configurator.setLevel("edu.yu.compilers", Level.INFO);
@@ -34,13 +34,13 @@ class Simple4Test {
         .map(testName -> {
             return DynamicTest.dynamicTest("Test " + testName, () -> {
                 logger.info("===== BEGIN {} =====", testName);
-                testScan(testName);
+                testParse(testName);
                 logger.info("===== END {} =====", testName);
             });
         });
     }
 
-    private void testScan(String testName) throws IOException {
+    private void testParse(String testName) throws IOException {
         String inputFileName = "/input/" + testName + ".txt";
         String outputFileName = "/output/" + testName + ".parsed.xml";
 
