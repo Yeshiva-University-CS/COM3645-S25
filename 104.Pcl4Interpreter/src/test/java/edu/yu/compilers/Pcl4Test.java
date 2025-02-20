@@ -31,7 +31,7 @@ class Pcl44Test {
 
     @TestFactory
     Stream<DynamicTest> dynamicTestsFromStream() {
-        return Stream.of("HelloWorld")
+        return Stream.of("HelloWorld", "Newton", "TestCase", "TestFor", "TestIf", "TestWhile")
         .map(testName -> {
             return DynamicTest.dynamicTest("Test " + testName, () -> {
                 logger.info("===== BEGIN {} =====", testName);

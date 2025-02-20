@@ -259,6 +259,84 @@ public class Executor extends Pcl4BaseVisitor<Object> {
         return convertString(pascalString);
     }
 
+    @Override
+    public Object visitForStatement(Pcl4Parser.ForStatementContext ctx)
+    {
+        Pcl4Parser.VariableContext   controlCtx   = ctx.variable();
+        Pcl4Parser.ExpressionContext startExprCtx = ctx.expression(0);
+        Pcl4Parser.ExpressionContext stopExprCtx  = ctx.expression(1);
+
+        // Initial control value.
+        String variableName = controlCtx.getText();
+        double startValue = (Double) visit(startExprCtx);
+        assign(variableName, startValue);
+
+        // Terminal control value.
+        boolean to = ctx.TO() != null;
+        double stopValue    = (Double) visit(stopExprCtx);
+        double controlValue = startValue;
+
+        if (to)
+        {
+            while (controlValue <= stopValue)
+            {
+                visit(ctx.statement());
+                Double nextValue = ++controlValue;
+                assign(variableName, nextValue);
+            }
+        }
+        else  // downto
+        {
+            while (controlValue >= stopValue)
+            {
+                visit(ctx.statement());
+                Double nextValue = --controlValue;
+                assign(variableName, nextValue);
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public Object visitCaseStatement(Pcl4Parser.CaseStatementContext ctx)
+    {
+        boolean foundMatch = false;
+        long caseValue = (long) ((double) visit(ctx.expression()));
+
+        // Loop over the CASE branches to look for a value match.
+        Pcl4Parser.CaseBranchListContext branchListCtx = ctx.caseBranchList();
+        for (Pcl4Parser.CaseBranchContext branchCtx : branchListCtx.caseBranch())
+        {
+            Pcl4Parser.CaseConstantListContext constListCtx =
+                    branchCtx.caseConstantList();
+
+            // Loop over the CASE constants of each CASE branch.
+            for (Pcl4Parser.CaseConstantContext caseConstCtx :
+                    constListCtx.caseConstant())
+            {
+                boolean negate =    (caseConstCtx.sign() != null)
+                        && (caseConstCtx.sign().getText().equals("-"));
+                long constValue =
+                        (long) ((double) visit(caseConstCtx.unsignedNumber()));
+                if (negate) constValue = -constValue;
+
+                // Match?
+                if (caseValue == constValue)
+                {
+                    visit(branchCtx.statement());
+
+                    foundMatch = true;
+                    break;
+                }
+            }
+
+            if (foundMatch) break;
+        }
+
+        return null;
+    }
+
     /**
      * Convert a Pascal string to a Java string.
      *
