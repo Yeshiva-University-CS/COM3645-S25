@@ -1,0 +1,11 @@
+# Test for REDECLARED_IDENTIFIER error
+# Redeclaring a variable in the same scope
+
+var x = 10;
+var x = 20;  # Error: Redeclared identifier "x"
+var y = 1 * 2;
+
+# Redeclaring a function parameter
+let duplicate param1 param2 param1 = {
+    return param1;
+};

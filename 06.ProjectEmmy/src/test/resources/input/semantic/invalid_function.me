@@ -1,0 +1,8 @@
+# Test for INVALID_FUNCTION error
+# Calling a non-function as if it were a function
+
+var counter = 42;
+print counter();  # Error: Identifier is not a function
+
+# Calling something that doesn't exist
+nonexistent_function();  # Error: Invalid function call

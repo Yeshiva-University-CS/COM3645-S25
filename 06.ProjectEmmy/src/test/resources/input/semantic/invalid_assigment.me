@@ -1,0 +1,8 @@
+# Test for INVALID_ASSIGNMENT error
+# Trying to assign to a function
+
+let multiply x y = x * y;
+multiply = 42;  # Error: Cannot assign to multiply of kind FUNCTION
+
+# Assignment to literal (if your language checks this)
+5 = 10;  # Error: Invalid assignment statement

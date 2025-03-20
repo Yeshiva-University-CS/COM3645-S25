@@ -1,0 +1,13 @@
+# Test for MISPLACED_RETURN error
+# Using return statement outside of a function
+
+return 42;  # Error: Return statement outside of function
+
+# Return with inconsistent types
+let inconsistent_returns condition = {
+    if (condition) {
+        return "string";
+    } else {
+        return 42;  # Error: Inconsistent return type
+    }
+};

@@ -1,0 +1,19 @@
+# Test for loop conditions type checking errors
+
+# While loop with non-boolean condition
+var x = 10;
+while (x) {  # Error: While condition must be a boolean expression
+    x = x - 1;
+}
+
+# Until loop with non-boolean condition
+var y = "not a boolean";
+loop {
+    print "looping";
+} until (y);  # Error: Until condition must be a boolean expression
+
+# Repeat loop with non-integer count
+var z = true;
+repeat z times {  # Error: Repeat count must be an integer expression
+    print "repeating";
+}

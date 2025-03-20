@@ -1,0 +1,17 @@
+# Test for equality operator type checking errors
+
+# Comparing incompatible types with equality operators
+let compare_function = { return true; };
+var num = 42;
+
+# This should cause a type mismatch error
+if (compare_function == num) {  # Error: Incompatible types in equality comparison
+    print "Functions aren't numbers";
+}
+
+# Chained equality with incompatible types
+var bool = true;
+var str = "string";
+if (num == bool == str) {  # Error: Incompatible types in equality comparison
+    print "This is nonsensical";
+}

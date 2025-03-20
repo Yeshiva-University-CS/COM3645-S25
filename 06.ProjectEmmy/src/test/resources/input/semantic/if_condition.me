@@ -1,0 +1,14 @@
+# Test for IF condition type checking errors
+
+# If statement with non-boolean condition
+var num = 42;
+if (num) {  # Error: If condition must be a boolean expression
+    print "This shouldn't work";
+}
+
+# Nested if with arithmetic expression
+if (true) {
+    if (5 + 3) {  # Error: If condition must be a boolean expression
+        print "Also shouldn't work";
+    }
+}

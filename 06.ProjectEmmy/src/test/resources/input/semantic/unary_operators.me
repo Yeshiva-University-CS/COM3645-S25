@@ -1,0 +1,13 @@
+# Test for unary operator type checking errors
+
+# Logical NOT with non-boolean
+var num = 123;
+var result = !num;  # Error: Logical NOT operand must be boolean
+
+# Unary minus with non-numeric
+var str = "hello";
+var neg_str = -str;  # Error: Unary minus operand must be numeric
+
+# Multiple errors
+var bool = true;
+print -bool;  # Error: Unary minus operand must be numeric

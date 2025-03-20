@@ -1,0 +1,19 @@
+# Test for TYPE_MISMATCH error
+# Boolean operation with non-boolean operands
+
+var a = 5;
+var b = 10;
+if (a and b) {  # Error: Logical AND operands must be boolean
+    print "Both true";
+}
+
+# Numeric operations with non-numeric operands
+var str = "hello";
+var num = 5;
+print str * num;  # Error: Mult/Div operands must be numeric
+
+# Comparison type issues
+var bool = true;
+if (bool > 5) {  # Error: Comparison operands must be compatible
+    print "impossible";
+}
