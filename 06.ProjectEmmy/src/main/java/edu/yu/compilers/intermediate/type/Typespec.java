@@ -6,6 +6,11 @@ public class Typespec {
     private final Form form; // type form
     private SymTableEntry identifier; // type identifier
 
+    static public Typespec newFunctionType(SymTableEntry entry) {
+        Typespec type = new Typespec(Form.FUNCTION);
+        type.setIdentifier(entry);
+        return type;
+    }
     public Typespec(Form form) {
         this.form = form;
     }
@@ -23,7 +28,7 @@ public class Typespec {
     }
 
     public enum Form {
-        SCALAR, UNKNOWN;
+        SCALAR, FUNCTION, DYNAMIC;
 
         public String toString() {
             return super.toString().toLowerCase();
@@ -39,10 +44,9 @@ public class Typespec {
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
-        } else if (!(obj instanceof Typespec)) {
+        } else if (!(obj instanceof Typespec type)) {
             return false;
         } else {
-            Typespec type = (Typespec) obj;
             return form == type.form && (identifier == null ? type.identifier == null : identifier.equals(type.identifier));
         }
     }

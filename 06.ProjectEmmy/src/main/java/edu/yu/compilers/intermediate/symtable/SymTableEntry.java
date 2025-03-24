@@ -34,15 +34,19 @@ public class SymTableEntry {
         this.kind = kind;
         this.symTable = symTable;
         this.lineNumbers = new ArrayList<>();
-        this.typespec = Predefined.noneType;
 
         // Initialize the appropriate entry information.
         switch (kind) {
-            case CONSTANT, VARIABLE, VALUE_PARAMETER -> info = new ValueInfo();
+            case CONSTANT, VARIABLE, VALUE_PARAMETER -> {
+                this.typespec = Predefined.noneType;
+                info = new ValueInfo();
+            }
             case FUNCTION, PROGRAM -> {
+                this.typespec = Typespec.newFunctionType(this);
                 info = new RoutineInfo();
                 ((RoutineInfo) info).parameters = new ArrayList<>();
                 ((RoutineInfo) info).subroutines = new ArrayList<>();
+                ((RoutineInfo) info).returnType = Predefined.noneType;
             }
             default -> {
             }
@@ -223,6 +227,25 @@ public class SymTableEntry {
     }
 
     /**
+     * Get the routine's return type.
+     *
+     * @return the Typespec of the return value.
+     */
+    public Typespec getReturnType() {
+        return ((RoutineInfo) info).returnType;
+    }
+
+    /**
+     * Set the routine's return type.
+     *
+     * @param type of the return value.
+     */
+    public void setReturnType(Typespec type) {
+        ((RoutineInfo) info).returnType = type;
+    }
+
+
+    /**
      * What kind of identifier.
      */
     public enum Kind {
@@ -254,5 +277,6 @@ public class SymTableEntry {
         private List<SymTableEntry> parameters;   // routine's formal parameters
         private List<SymTableEntry> subroutines;  // symTable entries of subroutines
         private Object executable;                // routine's executable code
+        private Typespec returnType;              // routine's return type
     }
 }

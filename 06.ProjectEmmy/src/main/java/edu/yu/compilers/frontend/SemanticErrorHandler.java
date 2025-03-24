@@ -22,42 +22,34 @@ public class SemanticErrorHandler {
 
     private int count = 0;
 
-    /**
-     * Get the count of semantic errors.
-     * 
-     * @return the count.
-     */
     public int getCount() {
         return count;
     }
 
-    /**
-     * Flag a semantic error.
-     * 
-     * @param code       the error code.
-     * @param lineNumber the line number of the offending line.
-     * @param text       the text near the error.
-     */
-    public void flag(Code code, int lineNumber, String text) {
+
+    public void flag(Code code, int lineNumber, String context, String message) {
         if (count == 0) {
             System.out.println("\n===== SEMANTIC ERRORS =====\n");
-            System.out.printf("%-4s %-40s %s\n", "Line", "Message", "Found near");
-            System.out.printf("%-4s %-40s %s\n", "----", "-------", "----------");
+            System.out.printf("%-4s %-25s %-25s %s\n", "Line", "Type", "Found near", "Message");
+            System.out.printf("%-4s %-25s %-25s %s\n", "----", "----", "----------", "-------");
         }
 
         count++;
 
-        System.out.printf("%03d  %-40s \"%s\"\n",
-                lineNumber, code.message, text);
+        System.out.printf(" %03d %-25s %-25s %s\n",
+                lineNumber,
+                code.name(),
+                context,
+                message == null ? code.message : message
+        );
     }
 
-    /**
-     * Flag a semantic error.
-     * 
-     * @param code the error code.
-     * @param ctx  the context containing the error.
-     */
-    public void flag(Code code, ParserRuleContext ctx) {
-        flag(code, ctx.getStart().getLine(), ctx.getText());
+    public void flag(Code code, int lineNumber, String message) {
+        flag(code, lineNumber, "", message);
     }
+
+    public void flag(Code code, ParserRuleContext ctx, String message) {
+        flag(code, ctx.getStart().getLine(), ctx.getText(), message);
+    }
+
 }

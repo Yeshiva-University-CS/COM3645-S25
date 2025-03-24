@@ -4,12 +4,14 @@ import edu.yu.compilers.intermediate.symtable.Predefined;
 
 public class TypeChecker {
 
-    public static boolean isNone(Typespec type) {
+    public static boolean isFunction(Typespec type) { return type.getForm() == Typespec.Form.FUNCTION; }
+
+    public static boolean isDynamic(Typespec type) {
         return type.equals(Predefined.noneType);
     }
 
-    public static boolean atLeastOneIsNone(Typespec type1, Typespec type2) {
-        return isNone(type1) || isNone(type2);
+    public static boolean atLeastOneIsDynamic(Typespec type1, Typespec type2) {
+        return isDynamic(type1) || isDynamic(type2);
     }
 
     public static boolean isInteger(Typespec type) {
@@ -54,39 +56,45 @@ public class TypeChecker {
 
     public static boolean areAssignmentCompatible(Typespec lhsType, Typespec rhsType) {
         return lhsType.equals(rhsType)
-                || atLeastOneIsNone(lhsType, rhsType)
+                || atLeastOneIsDynamic(lhsType, rhsType)
                 || isReal(lhsType) && isInteger(rhsType);
     }
 
     public static boolean areComparable(Typespec leftType, Typespec rightType) {
-        return areNumeric(leftType, rightType) || areStrings(leftType, rightType);
+        return atLeastOneIsDynamic(leftType, rightType) ||
+                areNumeric(leftType, rightType) ||
+                areStrings(leftType, rightType);
     }
 
     public static boolean areEquatable(Typespec leftType, Typespec rightType) {
-        return leftType.equals(rightType);
+        return atLeastOneIsDynamic(leftType, rightType) || leftType.equals(rightType);
     }
 
     public static boolean supportsAdd(Typespec type) {
-        return isNumeric(type) || isString(type);
+        return isDynamic(type) ||
+                isNumeric(type) ||
+                isString(type);
     }
 
-    public static boolean supportsSubract(Typespec type) {
-        return isNumeric(type);
+    public static boolean supportsSubtract(Typespec type) {
+        return isDynamic(type) || isNumeric(type);
     }
 
     public static boolean supportsMultDiv(Typespec type) {
-        return isNumeric(type);
+        return isDynamic(type) || isNumeric(type);
     }
 
     public static boolean canAdd(Typespec leftType, Typespec rightType) {
-        return areNumeric(leftType, rightType) || areStrings(leftType, rightType);
+        return atLeastOneIsDynamic(leftType, rightType) ||
+                areNumeric(leftType, rightType) ||
+                areStrings(leftType, rightType);
     }
 
-    public static boolean canSubract(Typespec leftType, Typespec rightType) {
-        return areNumeric(leftType, rightType);
+    public static boolean canSubtract(Typespec leftType, Typespec rightType) {
+        return atLeastOneIsDynamic(leftType, rightType) || areNumeric(leftType, rightType);
     }
 
     public static boolean canMultDiv(Typespec leftType, Typespec rightType) {
-        return areNumeric(leftType, rightType);
+        return atLeastOneIsDynamic(leftType, rightType) || areNumeric(leftType, rightType);
     }
 }

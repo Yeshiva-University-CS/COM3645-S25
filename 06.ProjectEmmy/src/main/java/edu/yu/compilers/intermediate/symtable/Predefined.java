@@ -11,8 +11,7 @@ package edu.yu.compilers.intermediate.symtable;
 
 import static edu.yu.compilers.intermediate.symtable.SymTableEntry.Kind.CONSTANT;
 import static edu.yu.compilers.intermediate.symtable.SymTableEntry.Kind.TYPE;
-import static edu.yu.compilers.intermediate.type.Typespec.Form.SCALAR;
-import static edu.yu.compilers.intermediate.type.Typespec.Form.UNKNOWN;
+import static edu.yu.compilers.intermediate.type.Typespec.Form.*;
 
 import edu.yu.compilers.intermediate.type.Typespec;
 
@@ -76,7 +75,7 @@ public class Predefined {
 
         // Undefined type.
         noneId = symTableStack.enterLocal("none", TYPE);
-        noneType = new Typespec(UNKNOWN);
+        noneType = new Typespec(DYNAMIC);
         noneType.setIdentifier(noneId);
         noneId.setType(noneType);
     }
