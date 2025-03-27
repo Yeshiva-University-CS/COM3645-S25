@@ -7,13 +7,13 @@
  * <p>For instructional purposes only.  No warranties.</p>
  */
 
-package edu.yu.compilers.intermediate.symtable;
+package edu.yu.compilers.intermediate.symbols;
 
-import static edu.yu.compilers.intermediate.symtable.SymTableEntry.Kind.CONSTANT;
-import static edu.yu.compilers.intermediate.symtable.SymTableEntry.Kind.TYPE;
-import static edu.yu.compilers.intermediate.type.Typespec.Form.*;
+import static edu.yu.compilers.intermediate.symbols.SymTableEntry.Kind.CONSTANT;
+import static edu.yu.compilers.intermediate.symbols.SymTableEntry.Kind.TYPE;
+import static edu.yu.compilers.intermediate.types.Typespec.Form.*;
 
-import edu.yu.compilers.intermediate.type.Typespec;
+import edu.yu.compilers.intermediate.types.Typespec;
 
 public class Predefined {
     // Predefined types.

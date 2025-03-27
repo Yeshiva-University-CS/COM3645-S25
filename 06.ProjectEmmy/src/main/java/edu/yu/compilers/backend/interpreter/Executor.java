@@ -3,7 +3,7 @@ package edu.yu.compilers.backend.interpreter;
 import java.util.Scanner;
 
 import antlr4.EmmyBaseVisitor;
-import edu.yu.compilers.intermediate.symtable.SymTableEntry;
+import edu.yu.compilers.intermediate.symbols.SymTableEntry;
 
 /**
  * Execute Emmy programs.

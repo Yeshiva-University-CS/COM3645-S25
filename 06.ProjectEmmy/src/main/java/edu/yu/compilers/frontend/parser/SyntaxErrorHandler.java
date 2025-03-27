@@ -1,4 +1,4 @@
-package edu.yu.compilers.frontend;
+package edu.yu.compilers.frontend.parser;
 
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.RecognitionException;

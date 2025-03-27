@@ -6,11 +6,11 @@
  * <p>For instructional purposes only.  No warranties.</p>
  */
 
-package edu.yu.compilers.intermediate.symtable;
-
-import edu.yu.compilers.intermediate.symtable.SymTableEntry.Kind;
+package edu.yu.compilers.intermediate.symbols;
 
 import java.util.ArrayList;
+
+import edu.yu.compilers.intermediate.symbols.SymTableEntry.Kind;
 
 public class SymTableStack extends ArrayList<SymTable> {
     private static final long serialVersionUID = 0L;

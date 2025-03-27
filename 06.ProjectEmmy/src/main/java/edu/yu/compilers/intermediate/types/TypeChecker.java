@@ -1,6 +1,6 @@
-package edu.yu.compilers.intermediate.type;
+package edu.yu.compilers.intermediate.types;
 
-import edu.yu.compilers.intermediate.symtable.Predefined;
+import edu.yu.compilers.intermediate.symbols.Predefined;
 
 public class TypeChecker {
 
@@ -96,5 +96,9 @@ public class TypeChecker {
 
     public static boolean canMultDiv(Typespec leftType, Typespec rightType) {
         return atLeastOneIsDynamic(leftType, rightType) || areNumeric(leftType, rightType);
+    }
+
+    public static boolean atLeastOneIsReal(Typespec type, Typespec type2) {
+        return isReal(type) || isReal(type2);
     }
 }

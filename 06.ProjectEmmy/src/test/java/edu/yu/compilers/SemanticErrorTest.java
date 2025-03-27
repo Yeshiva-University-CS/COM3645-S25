@@ -1,8 +1,9 @@
 package edu.yu.compilers;
 
-import edu.yu.compilers.frontend.Semantics;
-
 import org.junit.jupiter.api.Test;
+
+import edu.yu.compilers.frontend.semantic.Semantics;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;

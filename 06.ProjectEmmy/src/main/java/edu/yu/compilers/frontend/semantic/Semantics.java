@@ -3,22 +3,24 @@
  * Perform type checking and create symbol tables.
  */
 
-package edu.yu.compilers.frontend;
+package edu.yu.compilers.frontend.semantic;
 
 import java.util.Stack;
 
 import antlr4.EmmyBaseVisitor;
 import antlr4.EmmyParser;
+import antlr4.EmmyParser.ArgumentListContext;
 import antlr4.EmmyParser.FunctionDeclarationContext;
+import antlr4.EmmyParser.NoargsContext;
 import antlr4.EmmyParser.PrimaryContext;
 import antlr4.EmmyParser.ProgramStartContext;
-import edu.yu.compilers.frontend.SemanticErrorHandler.Code;
-import edu.yu.compilers.intermediate.symtable.Predefined;
-import edu.yu.compilers.intermediate.symtable.SymTableEntry;
-import edu.yu.compilers.intermediate.symtable.SymTableEntry.Kind;
-import edu.yu.compilers.intermediate.symtable.SymTableStack;
-import edu.yu.compilers.intermediate.type.Typespec;
-import edu.yu.compilers.intermediate.util.CrossReferencer;
+import edu.yu.compilers.frontend.semantic.SemanticErrorHandler.Code;
+import edu.yu.compilers.intermediate.symbols.CrossReferencer;
+import edu.yu.compilers.intermediate.symbols.Predefined;
+import edu.yu.compilers.intermediate.symbols.SymTableEntry;
+import edu.yu.compilers.intermediate.symbols.SymTableEntry.Kind;
+import edu.yu.compilers.intermediate.symbols.SymTableStack;
+import edu.yu.compilers.intermediate.types.Typespec;
 
 public class Semantics extends EmmyBaseVisitor<Void> {
     private final SymTableStack symTableStack;
@@ -35,6 +37,7 @@ public class Semantics extends EmmyBaseVisitor<Void> {
         Predefined.initialize(symTableStack);
         this.error = new SemanticErrorHandler();
     }
+
 
     public SymTableStack getSymTableStack() {
         return symTableStack;
@@ -55,7 +58,7 @@ public class Semantics extends EmmyBaseVisitor<Void> {
 
     @Override
     public Void visitProgramStart(ProgramStartContext ctx) {
-        SymTableEntry entry = symTableStack.enterLocal("__program__", Kind.PROGRAM);
+        SymTableEntry entry = symTableStack.enterLocal( "__program__", Kind.PROGRAM);
         entry.setRoutineSymTable(symTableStack.push());
         entry.appendLineNumber(ctx.start.getLine());
         symTableStack.setProgramId(entry);
@@ -175,7 +178,6 @@ public class Semantics extends EmmyBaseVisitor<Void> {
     @Override
     public Void visitLogicalOr(EmmyParser.LogicalOrContext ctx) {
         // TODO: Implementation of various type checking
-
         visit(ctx.left);
         Typespec leftType = ctx.left.type;
         Object leftValue = ctx.left.value;
@@ -221,12 +223,14 @@ public class Semantics extends EmmyBaseVisitor<Void> {
         Object leftValue = ctx.left.value;
 
         if (!ctx.right.isEmpty()) {
+            Boolean chainedEquality = Boolean.TRUE;
+
             for (int i = 0; i < ctx.right.size(); i++) {
                 visit(ctx.right.get(i));
             }
 
             leftType = Predefined.booleanType;
-            leftValue = null;
+            leftValue = chainedEquality;
         }
 
         ctx.type = leftType;
@@ -243,12 +247,14 @@ public class Semantics extends EmmyBaseVisitor<Void> {
         Object leftValue = ctx.left.value;
 
         if (!ctx.right.isEmpty()) {
+            Boolean chainedComparison = Boolean.TRUE;
+
             for (int i = 0; i < ctx.right.size(); i++) {
                 visit(ctx.right.get(i));
             }
 
             leftType = Predefined.booleanType;
-            leftValue = null;
+            leftValue = chainedComparison;
         }
 
         ctx.type = leftType;
@@ -307,6 +313,7 @@ public class Semantics extends EmmyBaseVisitor<Void> {
         ctx.type = type;
         ctx.value = value;
         return null;
+
     }
 
     @Override
@@ -328,8 +335,13 @@ public class Semantics extends EmmyBaseVisitor<Void> {
         ctx.value = primaryCtx.value;
         ctx.entry = primaryCtx.entry;
 
-        if (ctx.args.size() > 1) {
-            // Process function calls, visit all arguments
+        if (ctx.getChildCount() > 1) {
+            // This is a function call
+
+            if (primaryCtx.entry == null) {
+                // The error will already have been reported
+                return null;
+            }
 
             for (int i = 0; i < ctx.args.size(); i++) {
                 visit(ctx.args.get(i));
@@ -337,6 +349,17 @@ public class Semantics extends EmmyBaseVisitor<Void> {
         }
 
         return null;
+    }
+
+    private int getArgumentCount(EmmyParser.ArgumentsContext ctx) {
+        if (ctx == null) {
+            return 0;
+        } else if (ctx instanceof NoargsContext) {
+            return 0;
+        } else  {
+            ArgumentListContext listCtx = (ArgumentListContext) ctx;
+            return listCtx.rest.size() + 1; // +1 for the first argument
+        }
     }
 
     @Override

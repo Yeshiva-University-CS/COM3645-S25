@@ -1,12 +1,8 @@
-package edu.yu.compilers.intermediate.util;
+package edu.yu.compilers.intermediate.symbols;
 
-import edu.yu.compilers.intermediate.symtable.Predefined;
-import edu.yu.compilers.intermediate.symtable.SymTable;
-import edu.yu.compilers.intermediate.symtable.SymTableEntry;
-import edu.yu.compilers.intermediate.symtable.SymTableEntry.Kind;
-import edu.yu.compilers.intermediate.symtable.SymTableStack;
-import edu.yu.compilers.intermediate.type.Typespec;
-import edu.yu.compilers.intermediate.type.Typespec.Form;
+import edu.yu.compilers.intermediate.symbols.SymTableEntry.Kind;
+import edu.yu.compilers.intermediate.types.Typespec;
+import edu.yu.compilers.intermediate.types.Typespec.Form;
 
 import java.util.List;
 

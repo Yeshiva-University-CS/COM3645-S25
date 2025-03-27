@@ -4,16 +4,16 @@
  * <p>Adapted from</p>
  * <p>Copyright (c) 2020 by Ronald Mak</p>
  */
-package edu.yu.compilers.intermediate.symtable;
+package edu.yu.compilers.intermediate.symbols;
 
-import edu.yu.compilers.intermediate.symtable.SymTableEntry.Kind;
+import static edu.yu.compilers.intermediate.symbols.SymTableEntry.Kind.VARIABLE;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-import static edu.yu.compilers.intermediate.symtable.SymTableEntry.Kind.VARIABLE;
+import edu.yu.compilers.intermediate.symbols.SymTableEntry.Kind;
 
 public class SymTable
         extends TreeMap<String, SymTableEntry> {

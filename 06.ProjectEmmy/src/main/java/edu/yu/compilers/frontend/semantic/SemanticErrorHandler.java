@@ -1,4 +1,4 @@
-package edu.yu.compilers.frontend;
+package edu.yu.compilers.frontend.semantic;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 

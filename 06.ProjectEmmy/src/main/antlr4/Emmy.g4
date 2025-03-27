@@ -2,8 +2,8 @@ grammar Emmy;
 
 @header {
     package antlr4;
-    import edu.yu.compilers.intermediate.symtable.SymTableEntry;
-    import edu.yu.compilers.intermediate.type.Typespec;
+    import edu.yu.compilers.intermediate.symbols.SymTableEntry;
+    import edu.yu.compilers.intermediate.types.Typespec;
 }
 
 program : declaration* # programStart;
@@ -64,7 +64,7 @@ expression
     : assignment # expr;
 
 assignment     
-    locals [Typespec type = null, Object value = null]    
+    locals [Typespec type = null, Object value = null, SymTableEntry entry = null]
     : id=IDENTIFIER '=' rhs=assignment # assignmentExpr
     | logic_or                         # assignmentOr
     ;
@@ -101,7 +101,7 @@ unary
 
 call       
     locals [Typespec type = null, Object value = null, SymTableEntry entry = null]  
-    : primary ('(' args+=arguments? ')')* # callExpr;
+    : primary ('(' args+=arguments ')')* # callExpr;
 
 primary 
     locals [Typespec type = null, Object value = null, SymTableEntry entry = null]    
@@ -114,7 +114,9 @@ primary
     | '(' inner=expression ')'   # primaryParenthesis
     ;
 
-arguments : first=expression (',' rest+=expression)* # argumentList;     
+arguments
+    :                                          # noargs
+    | first=expression (',' rest+=expression)* # argumentList;
 
 NUMBER     : DIGIT+ ('.' DIGIT+)? ;
 STRING     : '"' ~('"')* '"' ;

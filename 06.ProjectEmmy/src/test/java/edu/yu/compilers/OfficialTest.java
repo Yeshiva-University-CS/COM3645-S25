@@ -1,6 +1,5 @@
 package edu.yu.compilers;
 
-import edu.yu.compilers.frontend.Semantics;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 
 import antlr4.EmmyLexer;
 import antlr4.EmmyParser;
+import edu.yu.compilers.frontend.semantic.Semantics;
 
 class OfficialTest {
 

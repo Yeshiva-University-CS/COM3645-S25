@@ -7,10 +7,10 @@
 
 package edu.yu.compilers.backend.interpreter;
 
-import edu.yu.compilers.intermediate.symtable.SymTable;
-import edu.yu.compilers.intermediate.symtable.SymTableEntry;
-
 import java.util.ArrayList;
+
+import edu.yu.compilers.intermediate.symbols.SymTable;
+import edu.yu.compilers.intermediate.symbols.SymTableEntry;
 
 public class StackFrame {
     private final SymTableEntry routineId;  // symbol table entry of the routine's name

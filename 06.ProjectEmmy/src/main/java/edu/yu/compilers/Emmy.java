@@ -2,8 +2,12 @@ package edu.yu.compilers;
 
 import antlr4.EmmyLexer;
 import antlr4.EmmyParser;
-import edu.yu.compilers.frontend.Semantics;
-import edu.yu.compilers.frontend.SyntaxErrorHandler;
+import edu.yu.compilers.frontend.ast.ASTBuilder;
+import edu.yu.compilers.frontend.parser.SyntaxErrorHandler;
+import edu.yu.compilers.frontend.semantic.Semantics;
+import edu.yu.compilers.intermediate.ast.ASTYamlPrinter;
+import edu.yu.compilers.intermediate.ast.Program;
+
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -86,32 +90,33 @@ public class Emmy {
             if (!mode.equals(Mode.TYPE)) {
                 return;
             }
+        }
 
-            switch (mode) {
-                case TYPE -> {
-                    // Print the symbol table stack.
-                    pass2.printSymbolTableStack();
-                }
-                case AST -> {
-                    // Pass 2B: Build the AST IR
-                    System.out.print("\nPASS 2B Build AST IR: ");
-                    System.out.print("\nTBD:\n\n");
-                }
-                case EXECUTE -> {
-                    // Pass 3: Execute the Emmy program.
-                    System.out.print("\nPASS 3 Execute: ");
-                    System.out.print("\nTBD:\n\n");
-                }
-                case CONVERT -> {
-                    // Pass 3: Convert from Emmy to Java.
-                    System.out.print("\nPASS 3 Convert: ");
-                    System.out.print("\nTBD:\n\n");
-                }
-                case COMPILE -> {
-                    // Pass 3: Compile the Emmy program.
-                    System.out.print("\nPASS 3 Compile: ");
-                    System.out.print("\nTBD:\n\n");
-                }
+        switch (mode) {
+            case TYPE -> {
+                // Print the symbol table stack.
+                pass2.printSymbolTableStack();
+            }
+            case AST -> {
+                // Pass 2B: Build the AST
+                System.out.println("\nPASS 2B Build AST IR:");
+                Program program = ASTBuilder.build(tree);
+                ASTYamlPrinter.print(program);
+            }
+            case EXECUTE -> {
+                // Pass 3: Execute the Emmy program.
+                System.out.println("\nPASS 3 Execute: ");
+                System.out.print("\nTBD:\n\n");
+            }
+            case CONVERT -> {
+                // Pass 3: Convert from Emmy to Java.
+                System.out.println("\nPASS 3 Convert: ");
+                System.out.print("\nTBD:\n\n");
+            }
+            case COMPILE -> {
+                // Pass 3: Compile the Emmy program.
+                System.out.println("\nPASS 3 Compile: ");
+                System.out.print("\nTBD:\n\n");
             }
         }
     }

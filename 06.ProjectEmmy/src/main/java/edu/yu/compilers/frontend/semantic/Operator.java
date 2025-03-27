@@ -1,4 +1,4 @@
-package edu.yu.compilers.frontend;
+package edu.yu.compilers.frontend.semantic;
 
 public class Operator {
 

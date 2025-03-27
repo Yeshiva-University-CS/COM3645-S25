@@ -1,16 +1,15 @@
 package edu.yu.compilers.intermediate.ast;
 
+import java.util.Collections;
 import java.util.List;
 
-import edu.yu.compilers.intermediate.symtable.SymTableEntry;
+import edu.yu.compilers.intermediate.symbols.SymTableEntry;
 
-abstract class Stmt {
+public abstract class Stmt {
     interface Visitor<R> {
         R visitBlockStmt(Block stmt);
 
         R visitExpressionStmt(Expression stmt);
-
-        R visitFunctionStmt(Function stmt);
 
         R visitIfStmt(If stmt);
 
@@ -25,15 +24,16 @@ abstract class Stmt {
         R visitVarStmt(Var stmt);
     }
 
+    abstract <R> R accept(Visitor<R> visitor);
+    
     /**
      * Implementations of Stmt below
      **/
 
-    
-    static class Block extends Stmt {
-        final List<Stmt> statements;
+    public static class Block extends Stmt {
+        private final List<Stmt> statements;
 
-        Block(List<Stmt> statements) {
+        public Block(List<Stmt> statements) {
             this.statements = statements;
         }
 
@@ -41,12 +41,16 @@ abstract class Stmt {
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitBlockStmt(this);
         }
+
+        public List<Stmt> getStatements() {
+            return Collections.unmodifiableList(statements);
+        }
     }
 
-    static class Expression extends Stmt {
-        final Expr expression;
+    public static class Expression extends Stmt {
+        private final Expr expression;
 
-        Expression(Expr expression) {
+        public Expression(Expr expression) {
             this.expression = expression;
         }
 
@@ -54,31 +58,18 @@ abstract class Stmt {
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitExpressionStmt(this);
         }
-    }
 
-    static class Function extends Stmt {
-        final SymTableEntry entry;
-        final List<SymTableEntry> params;
-        final List<Stmt> body;
-
-        Function(SymTableEntry entry, List<Stmt> body) {
-            this.entry = entry;
-            this.params = entry.getRoutineParameters();
-            this.body = body;
-        }
-
-        @Override
-        <R> R accept(Visitor<R> visitor) {
-            return visitor.visitFunctionStmt(this);
+        public Expr getExpression() {
+            return expression;
         }
     }
 
-    static class If extends Stmt {
-        final Expr condition;
-        final Stmt thenBranch;
-        final Stmt elseBranch;
+    public static class If extends Stmt {
+        private final Expr condition;
+        private final Stmt thenBranch;
+        private final Stmt elseBranch;
 
-        If(Expr condition, Stmt thenBranch, Stmt elseBranch) {
+        public If(Expr condition, Stmt thenBranch, Stmt elseBranch) {
             this.condition = condition;
             this.thenBranch = thenBranch;
             this.elseBranch = elseBranch;
@@ -88,13 +79,25 @@ abstract class Stmt {
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitIfStmt(this);
         }
+
+        public Expr getCondition() {
+            return condition;
+        }
+
+        public Stmt getThenBranch() {
+            return thenBranch;
+        }
+
+        public Stmt getElseBranch() {
+            return elseBranch;
+        }
     }
 
-    static class Loop extends Stmt {
-        final Stmt initializer;
-        final List<Stmt> body;
+    public static class Loop extends Stmt {
+        private final Stmt initializer;
+        private final List<Stmt> body;
 
-        Loop(Stmt initializer, List<Stmt> body) {
+        public Loop(Stmt initializer, List<Stmt> body) {
             this.initializer = initializer;
             this.body = body;
         }
@@ -104,10 +107,10 @@ abstract class Stmt {
             return visitor.visitLoopStmt(this);
         }
 
-        static class BreakTest extends Stmt {
-            final Expr condition;
+        public static class BreakTest extends Stmt {
+            private final Expr condition;
 
-            BreakTest(Expr condition) {
+            public BreakTest(Expr condition) {
                 this.condition = condition;
             }
 
@@ -115,13 +118,25 @@ abstract class Stmt {
             <R> R accept(Visitor<R> visitor) {
                 return visitor.visitLoopBreakTestStmt(this);
             }
+
+            public Expr getCondition() {
+                return condition;
+            }
+        }
+
+        public Stmt getInitializer() {
+            return initializer;
+        }
+
+        public List<Stmt> getBody() {
+            return Collections.unmodifiableList(body);
         }
     }
 
-    static class Print extends Stmt {
-        final Expr expression;
+    public static class Print extends Stmt {
+        private final Expr expression;
 
-        Print(Expr expression) {
+        public Print(Expr expression) {
             this.expression = expression;
         }
 
@@ -129,12 +144,16 @@ abstract class Stmt {
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitPrintStmt(this);
         }
+
+        public Expr getExpression() {
+            return expression;
+        }
     }
 
-    static class Return extends Stmt {
-        final Expr value;
+    public static class Return extends Stmt {
+        private final Expr value;
 
-        Return(Expr value) {
+        public Return(Expr value) {
             this.value = value;
         }
 
@@ -142,13 +161,17 @@ abstract class Stmt {
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitReturnStmt(this);
         }
+
+        public Expr getValue() {
+            return value;
+        }
     }
 
-    static class Var extends Stmt {
-        final SymTableEntry entry;
-        final Expr initializer;
+    public static class Var extends Stmt {
+        private final SymTableEntry entry;
+        private final Expr initializer;
 
-        Var(SymTableEntry entry, Expr initializer) {
+        public Var(SymTableEntry entry, Expr initializer) {
             this.entry = entry;
             this.initializer = initializer;
         }
@@ -157,8 +180,14 @@ abstract class Stmt {
         <R> R accept(Visitor<R> visitor) {
             return visitor.visitVarStmt(this);
         }
-    }
 
-    abstract <R> R accept(Visitor<R> visitor);
+        public SymTableEntry getEntry() {
+            return entry;
+        }
+
+        public Expr getInitializer() {
+            return initializer;
+        }
+    }
 }
 // < Appendix II stmt

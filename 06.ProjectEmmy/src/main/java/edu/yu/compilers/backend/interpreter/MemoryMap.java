@@ -7,12 +7,13 @@
 
 package edu.yu.compilers.backend.interpreter;
 
-import edu.yu.compilers.intermediate.symtable.SymTable;
-import edu.yu.compilers.intermediate.symtable.SymTableEntry;
-import edu.yu.compilers.intermediate.symtable.SymTableEntry.Kind;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+
+import edu.yu.compilers.intermediate.symbols.SymTable;
+import edu.yu.compilers.intermediate.symbols.SymTableEntry;
+import edu.yu.compilers.intermediate.symbols.SymTableEntry.Kind;
 
 public class MemoryMap extends HashMap<String, Cell> {
     /**

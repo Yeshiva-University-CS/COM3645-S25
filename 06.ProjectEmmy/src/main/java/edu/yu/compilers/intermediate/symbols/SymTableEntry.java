@@ -6,21 +6,20 @@
  * <p>For instructional purposes only.  No warranties.</p>
  */
 
-package edu.yu.compilers.intermediate.symtable;
-
-import edu.yu.compilers.intermediate.type.Typespec;
+package edu.yu.compilers.intermediate.symbols;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.yu.compilers.intermediate.types.Typespec;
 
 public class SymTableEntry {
-    private final String name;                // entry name
-    private final SymTable symTable;          // parent symbol table
-    private final List<Integer> lineNumbers;  // source line numbers
-    private Kind kind;                        // what kind of identifier
-    private Typespec typespec;                // type specification
-    private EntryInfo info;                   // entry information
+    private final String name; // entry name
+    private final SymTable symTable; // parent symbol table
+    private final List<Integer> lineNumbers; // source line numbers
+    private Kind kind; // what kind of identifier
+    private Typespec typespec; // type specification
+    private EntryInfo info; // entry information
 
     /**
      * Constructor.
@@ -72,8 +71,8 @@ public class SymTableEntry {
     }
 
     /**
-     *  Returns true if the Kind of the entry
-     *  is one of the Constant kinds
+     * Returns true if the Kind of the entry
+     * is one of the Constant kinds
      *
      * @return true if yes
      */
@@ -81,6 +80,25 @@ public class SymTableEntry {
         return kind == Kind.CONSTANT;
     }
 
+    /**
+     * Returns true if the Kind of the entry
+     * is the Function
+     *
+     * @return true if yes
+     */
+    public boolean isFunction() {
+        return kind == Kind.FUNCTION;
+    }
+
+    /**
+     * Returns true if the Kind of the entry
+     * is a variable
+     * @return
+     */
+    public boolean isVariable() {
+        return kind == Kind.VARIABLE;
+    }
+    
     /**
      * Set the kind of entry.
      *
@@ -98,7 +116,6 @@ public class SymTableEntry {
     public SymTable getSymTable() {
         return symTable;
     }
-
 
     /**
      * Get the type specification of the entry.
@@ -244,7 +261,6 @@ public class SymTableEntry {
         ((RoutineInfo) info).returnType = type;
     }
 
-
     /**
      * What kind of identifier.
      */
@@ -273,10 +289,10 @@ public class SymTableEntry {
      * Routine information.
      */
     private static class RoutineInfo implements EntryInfo {
-        private SymTable symTable;                // routine's symbol table
-        private List<SymTableEntry> parameters;   // routine's formal parameters
-        private List<SymTableEntry> subroutines;  // symTable entries of subroutines
-        private Object executable;                // routine's executable code
-        private Typespec returnType;              // routine's return type
+        private SymTable symTable; // routine's symbol table
+        private List<SymTableEntry> parameters; // routine's formal parameters
+        private List<SymTableEntry> subroutines; // symTable entries of subroutines
+        private Object executable; // routine's executable code
+        private Typespec returnType; // routine's return type
     }
 }

@@ -3,7 +3,7 @@ package edu.yu.compilers.intermediate.ast;
 /**
  * Enumeration of operator types used in expressions.
  */
-public enum OpType {
+public enum Oper {
 
     // Arithmetic operators
     ADD, SUB, MUL, DIV,

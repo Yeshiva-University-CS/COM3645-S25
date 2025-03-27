@@ -1,9 +1,9 @@
 package edu.yu.compilers;
 
-import edu.yu.compilers.frontend.Semantics;
-import edu.yu.compilers.intermediate.symtable.SymTable;
-import edu.yu.compilers.intermediate.symtable.SymTableEntry;
-import edu.yu.compilers.intermediate.symtable.SymTableStack;
+import edu.yu.compilers.frontend.semantic.Semantics;
+import edu.yu.compilers.intermediate.symbols.SymTable;
+import edu.yu.compilers.intermediate.symbols.SymTableEntry;
+import edu.yu.compilers.intermediate.symbols.SymTableStack;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
