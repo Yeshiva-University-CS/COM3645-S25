@@ -22,6 +22,10 @@ public abstract class Stmt {
         R visitReturnStmt(Return stmt);
 
         R visitVarStmt(Var stmt);
+        
+        default R visit(Stmt stmt) {
+            return stmt.accept(this);
+        }
     }
 
     abstract <R> R accept(Visitor<R> visitor);

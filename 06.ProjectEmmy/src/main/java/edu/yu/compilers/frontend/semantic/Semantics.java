@@ -5,11 +5,14 @@
 
 package edu.yu.compilers.frontend.semantic;
 
+import java.util.List;
 import java.util.Stack;
 
 import antlr4.EmmyBaseVisitor;
 import antlr4.EmmyParser;
 import antlr4.EmmyParser.ArgumentListContext;
+import antlr4.EmmyParser.BlockStatementContext;
+import antlr4.EmmyParser.DeclarationContext;
 import antlr4.EmmyParser.FunctionDeclarationContext;
 import antlr4.EmmyParser.NoargsContext;
 import antlr4.EmmyParser.PrimaryContext;
@@ -92,6 +95,19 @@ public class Semantics extends EmmyBaseVisitor<Void> {
         if (!functionStack.isEmpty()) {
             SymTableEntry functionId = functionStack.peek();
             functionId.setReturnType(exprType);
+        }
+
+        return null;
+    }
+
+    @Override
+    public Void visitBlockBody(EmmyParser.BlockBodyContext ctx) {
+        // Visit the block directly without creating a new scope
+        // since the function declaration already created one
+
+        List<DeclarationContext> declarations = ((BlockStatementContext)ctx.block()).declarations;
+        for (EmmyParser.DeclarationContext decl : declarations) {
+            visit(decl);
         }
 
         return null;

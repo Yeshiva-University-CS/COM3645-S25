@@ -24,6 +24,10 @@ public abstract class Expr {
         R visitUnaryExpr(Unary expr);
 
         R visitVarIdExpr(VarId expr);
+
+        default R visit(Expr expr) {
+            return expr.accept(this);
+        }
     }
 
     private Typespec type;
@@ -222,7 +226,7 @@ public abstract class Expr {
             if (entry == null) {
                 throw new IllegalArgumentException("entry cannot be null");
             }
-            if (!entry.isVariable()) {
+            if (!(entry.isVariable() || entry.isValueParameter())) {
                 throw new IllegalArgumentException("entry must be a variable");
             }
             this.entry = entry;

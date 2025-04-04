@@ -441,7 +441,8 @@ public class ASTBuilder extends EmmyBaseVisitor<Object> {
 
     @Override
     public Expr visitPrimaryIdentifier(PrimaryIdentifierContext ctx) {
-        var expr = (ctx.entry.isVariable()) ? ASTFactory.createVarId(ctx.entry) : ASTFactory.createFuncId(ctx.entry);
+        var expr = (ctx.entry.isVariable() || ctx.entry.isValueParameter()) ? ASTFactory.createVarId(ctx.entry)
+                : ASTFactory.createFuncId(ctx.entry);
         expr.setType(ctx.type);
         return expr;
     }

@@ -93,12 +93,23 @@ public class SymTableEntry {
     /**
      * Returns true if the Kind of the entry
      * is a variable
+     * 
      * @return
      */
     public boolean isVariable() {
         return kind == Kind.VARIABLE;
     }
-    
+
+    /**
+     * Returns true if the Kind of the entry
+     * is a value parameters
+     * 
+     * @return
+     */
+    public boolean isValueParameter() {
+        return kind == Kind.VALUE_PARAMETER;
+    }
+
     /**
      * Set the kind of entry.
      *

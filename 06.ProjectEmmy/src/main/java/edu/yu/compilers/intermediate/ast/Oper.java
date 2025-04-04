@@ -49,7 +49,7 @@ public enum Oper {
      * @return true if unary operator, false otherwise
      */
     public boolean isUnary() {
-        return this == NOT; // Add SUB here if you want to include unary minus
+        return this == NOT || this == SUB;
     }
 
     /**
