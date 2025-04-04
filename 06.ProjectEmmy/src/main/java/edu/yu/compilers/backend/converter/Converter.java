@@ -2,12 +2,12 @@ package edu.yu.compilers.backend.converter;
 
 import java.util.Hashtable;
 
-import antlr4.EmmyBaseVisitor;
+import edu.yu.compilers.intermediate.ast.BaseASTVisitor;
 
 /**
  * Convert Emmy programs to Java.
  */
-public class Converter extends EmmyBaseVisitor<Object> {
+public class Converter extends BaseASTVisitor<Object> {
 
     // Map an Emmy datatype name to the Java datatype name.
     private static final Hashtable<String, String> typeNameTable;

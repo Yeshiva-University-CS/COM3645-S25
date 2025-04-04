@@ -2,13 +2,13 @@ package edu.yu.compilers.backend.interpreter;
 
 import java.util.Scanner;
 
-import antlr4.EmmyBaseVisitor;
+import edu.yu.compilers.intermediate.ast.BaseASTVisitor;
 import edu.yu.compilers.intermediate.symbols.SymTableEntry;
 
 /**
  * Execute Emmy programs.
  */
-public class Executor extends EmmyBaseVisitor<Object>
+public class Executor extends BaseASTVisitor<Object>
 {
     private int executionCount = 0;     // count of executed statements
     private long elapsedTime = 0L;          // elapsed time in ms
