@@ -3,11 +3,11 @@ package edu.yu.compilers.intermediate.ast;
 import java.util.Collections;
 import java.util.List;
 
-import edu.yu.compilers.intermediate.symbols.SymTableEntry;
-
 public abstract class Stmt {
     interface Visitor<R> {
         R visitBlockStmt(Block stmt);
+
+        R visitEmptyStmt(Empty stmt);
 
         R visitExpressionStmt(Expression stmt);
 
@@ -21,15 +21,13 @@ public abstract class Stmt {
 
         R visitReturnStmt(Return stmt);
 
-        R visitVarStmt(Var stmt);
-        
         default R visit(Stmt stmt) {
             return stmt.accept(this);
         }
     }
 
     abstract <R> R accept(Visitor<R> visitor);
-    
+
     /**
      * Implementations of Stmt below
      **/
@@ -48,6 +46,13 @@ public abstract class Stmt {
 
         public List<Stmt> getStatements() {
             return Collections.unmodifiableList(statements);
+        }
+    }
+
+    public static class Empty extends Stmt {
+        @Override
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitEmptyStmt(this);
         }
     }
 
@@ -168,29 +173,6 @@ public abstract class Stmt {
 
         public Expr getValue() {
             return value;
-        }
-    }
-
-    public static class Var extends Stmt {
-        private final SymTableEntry entry;
-        private final Expr initializer;
-
-        public Var(SymTableEntry entry, Expr initializer) {
-            this.entry = entry;
-            this.initializer = initializer;
-        }
-
-        @Override
-        <R> R accept(Visitor<R> visitor) {
-            return visitor.visitVarStmt(this);
-        }
-
-        public SymTableEntry getEntry() {
-            return entry;
-        }
-
-        public Expr getInitializer() {
-            return initializer;
         }
     }
 }

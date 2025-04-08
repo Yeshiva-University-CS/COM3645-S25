@@ -15,7 +15,6 @@ import edu.yu.compilers.intermediate.ast.Stmt.Loop;
 import edu.yu.compilers.intermediate.ast.Stmt.Loop.BreakTest;
 import edu.yu.compilers.intermediate.ast.Stmt.Print;
 import edu.yu.compilers.intermediate.ast.Stmt.Return;
-import edu.yu.compilers.intermediate.ast.Stmt.Var;
 
 /**
  * Base AST visitor implementation that by default visits all children of a
@@ -41,6 +40,11 @@ public class BaseASTVisitor<T> implements Expr.Visitor<T>, Stmt.Visitor<T> {
         for (Stmt s : stmt.getStatements()) {
             s.accept(this);
         }
+        return null;
+    }
+
+    @Override
+    public T visitEmptyStmt(Stmt.Empty stmt) {
         return null;
     }
 
@@ -106,15 +110,6 @@ public class BaseASTVisitor<T> implements Expr.Visitor<T>, Stmt.Visitor<T> {
     }
 
     @Override
-    public T visitVarStmt(Var stmt) {
-        // Visit the initializer if it exists
-        if (stmt.getInitializer() != null) {
-            stmt.getInitializer().accept(this);
-        }
-        return null;
-    }
-
-    @Override
     public T visitAssignExpr(Assign expr) {
         // Visit the value
         expr.getValue().accept(this);
@@ -139,7 +134,6 @@ public class BaseASTVisitor<T> implements Expr.Visitor<T>, Stmt.Visitor<T> {
             arg.accept(this);
         }
 
-        expr.getCodeBlock().accept(this);
         return null;
     }
 

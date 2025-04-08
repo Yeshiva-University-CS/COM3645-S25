@@ -2,7 +2,6 @@ package edu.yu.compilers.frontend.ast;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import edu.yu.compilers.intermediate.ast.Expr;
 import edu.yu.compilers.intermediate.ast.Oper;
 import edu.yu.compilers.intermediate.ast.Program;
@@ -57,11 +56,12 @@ public class ASTFactory {
     /**
      * Create a block statement.
      * 
-     * @param statements the list of statements in the block
-     * @return a block statement node
+     * @param entry      symbol table entry for the program
+     * @param statements the list of statements in the program
+     * @return a Program node
      */
-    public static Program createProgram(List<Stmt> statements) {
-        return new Program(statements);
+    public static Program createProgram(SymTableEntry entry, List<Stmt> statements) {
+        return new Program(entry, statements);
     }
 
     /**
@@ -77,11 +77,12 @@ public class ASTFactory {
     /**
      * Create a function identifier expression.
      * 
-     * @param entry symbol table entry for the function identifier
+     * @param entry     symbol table entry for the function identifier
+     * @param codeBlock the function's code block
      * @return an function identifier expression node
      */
-    public static Expr.FuncId createFuncId(SymTableEntry entry) {
-        return new Expr.FuncId(entry);
+    public static Expr.FuncId createFuncId(SymTableEntry entry, Stmt.Block codeBlock) {
+        return new Expr.FuncId(entry, codeBlock);
     }
 
     /**
@@ -91,7 +92,7 @@ public class ASTFactory {
      * @return a literal expression node
      */
     public static Expr.Literal createLiteral(Object value) {
-       return new Expr.Literal(value);
+        return new Expr.Literal(value);
     }
 
     /**
@@ -142,12 +143,13 @@ public class ASTFactory {
 
     /**
      * Create a function call expression.
-     * @param Expr of the function to call
+     * 
+     * @param Expr      of the function to call
      * @param arguments the argument expressions
      * @return a call expression node
      */
-    public static Expr.Call createCall(Expr.FuncId callee , List<Expr> arguments, Stmt.Block codeBlock) {
-        return new Expr.Call(callee, arguments, codeBlock);
+    public static Expr.Call createCall(Expr.FuncId callee, List<Expr> arguments) {
+        return new Expr.Call(callee, arguments);
     }
 
     /**
@@ -156,8 +158,8 @@ public class ASTFactory {
      * @param Expr of the function to call
      * @return a call expression node
      */
-    public static Expr.Call createCall(Expr.FuncId callee, Stmt.Block codeBlock) {
-        return new Expr.Call(callee, new ArrayList<>(), codeBlock);
+    public static Expr.Call createCall(Expr.FuncId callee) {
+        return new Expr.Call(callee, new ArrayList<>());
     }
 
     /**
@@ -181,17 +183,6 @@ public class ASTFactory {
     }
 
     /**
-     * Create a variable declaration statement.
-     * 
-     * @param entry       symbol table entry for the variable
-     * @param initializer the initializer expression (may be null)
-     * @return a variable declaration statement node
-     */
-    public static Stmt.Var createVarStmt(SymTableEntry entry, Expr initializer) {
-        return new Stmt.Var(entry, initializer);
-    }
-
-    /**
      * Create a block statement.
      * 
      * @param statements the list of statements in the block
@@ -199,6 +190,15 @@ public class ASTFactory {
      */
     public static Stmt.Block createBlockStmt(List<Stmt> statements) {
         return new Stmt.Block(statements);
+    }
+
+    /**
+     * Create an empty statement.
+     * 
+     * @return an empty statement node
+     */
+    public static Stmt.Empty createEmptyStmt() {
+        return new Stmt.Empty();
     }
 
     /**
@@ -220,7 +220,7 @@ public class ASTFactory {
      * @param body        the loop body statements
      * @return a loop statement node
      */
-    public static Stmt.Loop createLoopStmt(Stmt.Var initializer, List<Stmt> body) {
+    public static Stmt.Loop createLoopStmt(Stmt initializer, List<Stmt> body) {
         return new Stmt.Loop(initializer, body);
     }
 
@@ -298,7 +298,7 @@ public class ASTFactory {
      */
     public static Stmt.Loop createWhileStmt(Expr condition, Stmt body) {
         // Create empty initializer (while loops don't have initializers)
-        Stmt.Var emptyInitializer = null;
+        Stmt.Empty emptyInitializer = null;
 
         // Create break test with negated condition (loops continue while condition is
         // true)
@@ -332,7 +332,7 @@ public class ASTFactory {
      */
     public static Stmt.Loop createUntilStmt(Stmt body, Expr condition) {
         // Create empty initializer (until loops don't have initializers)
-        Stmt.Var emptyInitializer = null;
+        Stmt.Empty emptyInitializer = null;
 
         // Create the loop body statements
         List<Stmt> loopBody = new ArrayList<>();
@@ -368,7 +368,8 @@ public class ASTFactory {
 
         // Initialize counter to 0
         Expr counterInit = createLiteral(0);
-        Stmt.Var initializer = createVarStmt(counterEntry, counterInit);
+        Expr.Assign assignExpr = createAssign(counterEntry, counterInit);
+        Stmt.Expression initializer = createExpressionStmt(assignExpr);
 
         // Create the loop body statements
         List<Stmt> loopBody = new ArrayList<>();

@@ -101,12 +101,10 @@ public abstract class Expr {
     public static class Call extends Expr {
         private final Expr.FuncId callee;
         private final List<Expr> arguments;
-        private final Stmt.Block codeBlock;
 
-        public Call(Expr.FuncId callee, List<Expr> arguments, Stmt.Block codeBlock) {
+        public Call(Expr.FuncId callee, List<Expr> arguments) {
             this.callee = callee;
             this.arguments = arguments;
-            this.codeBlock = codeBlock;
         }
 
         @Override
@@ -120,10 +118,6 @@ public abstract class Expr {
 
         public List<Expr> getArguments() {
             return Collections.unmodifiableList(arguments);
-        }
-
-        public Stmt.Block getCodeBlock() {
-            return codeBlock;
         }
     }
 
@@ -198,8 +192,9 @@ public abstract class Expr {
 
     public static class FuncId extends Expr {
         private final SymTableEntry entry;
+        private final Stmt.Block codeBlock;
 
-        public FuncId(SymTableEntry entry) {
+        public FuncId(SymTableEntry entry, Stmt.Block codeBlock) {
             if (entry == null) {
                 throw new IllegalArgumentException("entry cannot be null");
             }
@@ -207,6 +202,7 @@ public abstract class Expr {
                 throw new IllegalArgumentException("entry must be a variable");
             }            
             this.entry = entry;
+            this.codeBlock = codeBlock;
         }
 
         @Override
@@ -216,6 +212,10 @@ public abstract class Expr {
 
         public SymTableEntry getEntry() {
             return entry;
+        }
+
+        public Stmt.Block getCodeBlock() {
+            return codeBlock;
         }
     }
 

@@ -3,16 +3,50 @@ package edu.yu.compilers.frontend.ast;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Stack;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import antlr4.EmmyBaseVisitor;
-import antlr4.EmmyParser.*;
+import antlr4.EmmyParser.ArgumentListContext;
+import antlr4.EmmyParser.ArgumentsContext;
+import antlr4.EmmyParser.AssignmentExprContext;
+import antlr4.EmmyParser.BlockBodyContext;
+import antlr4.EmmyParser.BlockStatementContext;
+import antlr4.EmmyParser.CallExprContext;
+import antlr4.EmmyParser.ComparisonContext;
+import antlr4.EmmyParser.ComparisonExprContext;
+import antlr4.EmmyParser.DeclarationContext;
+import antlr4.EmmyParser.EqualityExprContext;
+import antlr4.EmmyParser.ExpressionBodyContext;
+import antlr4.EmmyParser.ExpressionContext;
+import antlr4.EmmyParser.ExpressionStatementContext;
+import antlr4.EmmyParser.FactorExprContext;
+import antlr4.EmmyParser.FunctionDeclarationContext;
+import antlr4.EmmyParser.IfStatementContext;
+import antlr4.EmmyParser.LogicalAndContext;
+import antlr4.EmmyParser.LogicalOrContext;
+import antlr4.EmmyParser.PrimaryFalseContext;
+import antlr4.EmmyParser.PrimaryIdentifierContext;
+import antlr4.EmmyParser.PrimaryNoneContext;
+import antlr4.EmmyParser.PrimaryNumberContext;
+import antlr4.EmmyParser.PrimaryParenthesisContext;
+import antlr4.EmmyParser.PrimaryStringContext;
+import antlr4.EmmyParser.PrimaryTrueContext;
+import antlr4.EmmyParser.PrintStatementContext;
+import antlr4.EmmyParser.ProgramStartContext;
+import antlr4.EmmyParser.RepeatStatementContext;
+import antlr4.EmmyParser.ReturnStatementContext;
+import antlr4.EmmyParser.TermContext;
+import antlr4.EmmyParser.TermExprContext;
+import antlr4.EmmyParser.UnaryExprContext;
+import antlr4.EmmyParser.UntilStatementContext;
+import antlr4.EmmyParser.VariableDeclarationContext;
+import antlr4.EmmyParser.WhileStatementContext;
 import edu.yu.compilers.intermediate.ast.Expr;
 import edu.yu.compilers.intermediate.ast.Oper;
 import edu.yu.compilers.intermediate.ast.Program;
 import edu.yu.compilers.intermediate.ast.Stmt;
+import edu.yu.compilers.intermediate.ast.Expr.Assign;
 import edu.yu.compilers.intermediate.symbols.Predefined;
 import edu.yu.compilers.intermediate.symbols.SymTableEntry;
 import edu.yu.compilers.intermediate.types.TypeChecker;
@@ -31,6 +65,8 @@ public class ASTBuilder extends EmmyBaseVisitor<Object> {
         return builder.getProgam();
     }
 
+    private SymTableEntry programEntry = null;
+
     // A program is a just a list of statements
     private final List<Stmt> programStatements = new ArrayList<>();
 
@@ -43,7 +79,7 @@ public class ASTBuilder extends EmmyBaseVisitor<Object> {
     }
 
     private Program getProgam() {
-        return ASTFactory.createProgram(programStatements);
+        return ASTFactory.createProgram(programEntry, programStatements);
     }
 
     // =============================
@@ -52,17 +88,20 @@ public class ASTBuilder extends EmmyBaseVisitor<Object> {
 
     @Override
     public Void visitProgramStart(ProgramStartContext ctx) {
+        programEntry = ctx.entry;
+
         for (DeclarationContext declCtx : ctx.declaration()) {
-            Object result = visit(declCtx);
-            if (result != null && result instanceof Stmt) {
-                programStatements.add((Stmt) result);
+            Stmt result = (Stmt) visit(declCtx);
+            if (!(result instanceof Stmt.Empty)) {
+                programStatements.add(result);
             }
         }
+
         return null;
     }
 
     @Override
-    public Void visitFunctionDeclaration(FunctionDeclarationContext ctx) {
+    public Stmt.Empty visitFunctionDeclaration(FunctionDeclarationContext ctx) {
         Stmt body = (Stmt) visit(ctx.functionBody());
 
         if (!(body instanceof Stmt.Block)) {
@@ -73,13 +112,13 @@ public class ASTBuilder extends EmmyBaseVisitor<Object> {
 
         funcBodyMap.put(ctx.entry, (Stmt.Block) body);
 
-        return null;
+        return ASTFactory.createEmptyStmt();
     }
 
     @Override
-    public Stmt.Expression visitExpressionBody(ExpressionBodyContext ctx) {
+    public Stmt.Return visitExpressionBody(ExpressionBodyContext ctx) {
         var expr = (Expr) visit(ctx.expression());
-        return ASTFactory.createExpressionStmt(expr);
+        return ASTFactory.createReturnStmt(expr);
     }
 
     @Override
@@ -89,14 +128,15 @@ public class ASTBuilder extends EmmyBaseVisitor<Object> {
 
     @Override
     public Stmt visitVariableDeclaration(VariableDeclarationContext ctx) {
-        // If there is an initializer, create an assignment statement
-        if (ctx.init != null) {
-            Expr initializer = (Expr) visit(ctx.init);
-            var assignExpr = ASTFactory.createAssign(ctx.entry, initializer);
-            assignExpr.setType(initializer.getType());
-            return ASTFactory.createExpressionStmt(assignExpr);
-        }
-        return null;
+        // Create an assignment statement out of the variable declaration
+
+        Expr initializer = (ctx.init != null)
+                ? (Expr) visit(ctx.init)
+                : ASTFactory.createLiteral(null);
+
+        Assign assignExpr = ASTFactory.createAssign(ctx.entry, initializer);
+        assignExpr.setType(ctx.entry.getType());
+        return ASTFactory.createExpressionStmt(assignExpr);
     }
 
     // =============================
@@ -370,8 +410,7 @@ public class ASTBuilder extends EmmyBaseVisitor<Object> {
         for (int i = 0; i < ctx.args.size(); i++) {
             Expr.FuncId funcIdExpr = (Expr.FuncId) primary;
             List<Expr> arguments = getArguments(ctx.args.get(i));
-            Stmt.Block body = funcBodyMap.get(funcIdExpr.getEntry());
-            primary = ASTFactory.createCall(funcIdExpr, arguments, body);
+            primary = ASTFactory.createCall(funcIdExpr, arguments);
             primary.setType(funcIdExpr.getEntry().getReturnType());
         }
 
@@ -441,8 +480,15 @@ public class ASTBuilder extends EmmyBaseVisitor<Object> {
 
     @Override
     public Expr visitPrimaryIdentifier(PrimaryIdentifierContext ctx) {
-        var expr = (ctx.entry.isVariable() || ctx.entry.isValueParameter()) ? ASTFactory.createVarId(ctx.entry)
-                : ASTFactory.createFuncId(ctx.entry);
+        boolean isFuncCall = ctx.entry.isFunction();
+
+        Expr expr = null;
+        if (isFuncCall) {
+            Stmt.Block funcBody = funcBodyMap.get(ctx.entry);
+            expr = ASTFactory.createFuncId(ctx.entry, funcBody);
+        } else {
+            expr = ASTFactory.createVarId(ctx.entry);
+        }
         expr.setType(ctx.type);
         return expr;
     }

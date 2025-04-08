@@ -1,30 +1,35 @@
 package edu.yu.compilers;
 
-import antlr4.EmmyLexer;
-import antlr4.EmmyParser;
-import edu.yu.compilers.frontend.ast.ASTBuilder;
-import edu.yu.compilers.frontend.parser.SyntaxErrorHandler;
-import edu.yu.compilers.frontend.semantic.Semantics;
-import edu.yu.compilers.intermediate.ast.ASTYamlPrinter;
-import edu.yu.compilers.intermediate.ast.Program;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
+import antlr4.EmmyLexer;
+import antlr4.EmmyParser;
+import edu.yu.compilers.backend.compiler.Compiler;
+import edu.yu.compilers.backend.compiler.TACCodeGenerator;
+import edu.yu.compilers.backend.irgen.TupleIRBuilder;
+import edu.yu.compilers.frontend.ast.ASTBuilder;
+import edu.yu.compilers.frontend.parser.SyntaxErrorHandler;
+import edu.yu.compilers.frontend.semantic.Semantics;
+import edu.yu.compilers.intermediate.ast.ASTYamlPrinter;
+import edu.yu.compilers.intermediate.ast.Program;
+import edu.yu.compilers.intermediate.ir.TupleIR;
+import edu.yu.compilers.intermediate.ir.TupleIRUtils;
 
 public class Emmy {
     public static void main(String[] args) throws Exception {
         if (args.length != 2) {
-            System.out.println("USAGE: pascalCC {-type | ast | execute | -convert | -compile} sourceFileName");
+            System.out.println("USAGE: Emmy {-type | -ast | -ir | -execute | -convert | -compile} sourceFileName");
             return;
         }
 
         enum Mode {
-            TYPE, AST, EXECUTE, CONVERT, COMPILE
+            TYPE, AST, IR, EXECUTE, CONVERT, COMPILE
         }
 
         String option = args[0];
@@ -33,12 +38,13 @@ public class Emmy {
         Mode mode = switch (option.toLowerCase()) {
             case "-type" -> Mode.TYPE;
             case "-ast" -> Mode.AST;
+            case "-ir" -> Mode.IR;
             case "-execute" -> Mode.EXECUTE;
             case "-convert" -> Mode.CONVERT;
             case "-compile" -> Mode.COMPILE;
             default -> {
                 System.out.println("ERROR: Invalid option.");
-                System.out.println("USAGE: pascalCC {-type | -ast | -execute | -convert | -compile} sourceFileName");
+                System.out.println("USAGE: Emmy {-type | -ast | -ir | -execute | -convert | -compile} sourceFileName");
                 yield null;
             }
         };
@@ -86,23 +92,36 @@ public class Emmy {
         if (errorCount > 0) {
             System.out.printf("\nThere were %d semantic errors.\n", errorCount);
             System.out.println("Object file not created or modified.");
+        }
 
-            if (!mode.equals(Mode.TYPE)) {
-                return;
-            }
+        if (mode.equals(Mode.TYPE)) {
+            pass2.printSymbolTableStack();
+            return;
+        } else if (errorCount > 0) {
+            return;
+        }
+
+        // Pass 2B: Build the AST
+        System.out.println("\nPASS 2B Build AST IR:");
+        System.out.println("---------------------");
+        Program program = ASTBuilder.build(tree);
+        ASTYamlPrinter.print(program);
+
+        if (mode.equals(Mode.AST)) {
+            return;
+        }
+
+        // Pass 2C: Build the IR
+        System.out.println("\nPASS 2C Build IR:");
+        System.out.println("-----------------");
+        TupleIR ir = TupleIRBuilder.build(program);
+        System.out.print(TupleIRUtils.printIR(ir));
+
+        if (mode.equals(Mode.IR)) {
+            return;
         }
 
         switch (mode) {
-            case TYPE -> {
-                // Print the symbol table stack.
-                pass2.printSymbolTableStack();
-            }
-            case AST -> {
-                // Pass 2B: Build the AST
-                System.out.println("\nPASS 2B Build AST IR:");
-                Program program = ASTBuilder.build(tree);
-                ASTYamlPrinter.print(program);
-            }
             case EXECUTE -> {
                 // Pass 3: Execute the Emmy program.
                 System.out.println("\nPASS 3 Execute: ");
@@ -115,8 +134,15 @@ public class Emmy {
             }
             case COMPILE -> {
                 // Pass 3: Compile the Emmy program.
-                System.out.println("\nPASS 3 Compile: ");
-                System.out.print("\nTBD:\n\n");
+                System.out.println("\nPASS 3 Compile:");
+                System.out.println("---------------");
+                TACCodeGenerator codegen = new TACCodeGenerator();
+                Compiler compiler = new Compiler(codegen);
+                System.out.println(compiler.compile(ir));
+            }
+            default -> {
+                System.out.println("ERROR: Invalid option.");
+                System.out.println("USAGE: Emmy {-type | -ast | -ir | -execute | -convert | -compile} sourceFileName");
             }
         }
     }

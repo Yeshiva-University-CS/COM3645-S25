@@ -6,7 +6,9 @@ grammar Emmy;
     import edu.yu.compilers.intermediate.types.Typespec;
 }
 
-program : declaration* # programStart;
+program
+    locals [SymTableEntry entry = null]
+    : declaration* # programStart;
 
 declaration
     : funcDecl  # declFunction

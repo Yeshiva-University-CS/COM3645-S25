@@ -15,7 +15,6 @@ import edu.yu.compilers.intermediate.ast.Stmt.Loop;
 import edu.yu.compilers.intermediate.ast.Stmt.Loop.BreakTest;
 import edu.yu.compilers.intermediate.ast.Stmt.Print;
 import edu.yu.compilers.intermediate.ast.Stmt.Return;
-import edu.yu.compilers.intermediate.ast.Stmt.Var;
 import edu.yu.compilers.intermediate.symbols.SymTableEntry;
 import edu.yu.compilers.intermediate.types.TypeChecker;
 import edu.yu.compilers.intermediate.types.Typespec;
@@ -55,7 +54,7 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         
         List<Stmt> statements = program.getStatements();
         for (int i = 0; i < statements.size(); i++) {
-            String stmtYaml = statements.get(i).accept(this);
+            String stmtYaml = visit(statements.get(i));
             sb.append(INDENT).append("- ").append(stmtYaml.replace("\n", "\n" + INDENT + "  "));
             
             if (i < statements.size() - 1) {
@@ -75,7 +74,7 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         
         List<Stmt> statements = stmt.getStatements();
         for (int i = 0; i < statements.size(); i++) {
-            String stmtYaml = statements.get(i).accept(this);
+            String stmtYaml = visit(statements.get(i));
             sb.append(INDENT).append("- ").append(stmtYaml.replace("\n", "\n" + INDENT + "  "));
             
             if (i < statements.size() - 1) {
@@ -87,12 +86,17 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
     }
 
     @Override
+    public String visitEmptyStmt(Stmt.Empty stmt) {
+        return "";
+    }
+
+    @Override
     public String visitExpressionStmt(Expression stmt) {
         StringBuilder sb = new StringBuilder();
         sb.append("nodeType: ExpressionStmt\n");
         sb.append("expression: |\n");
         
-        String exprYaml = stmt.getExpression().accept(this);
+        String exprYaml = visit(stmt.getExpression());
         String[] lines = exprYaml.split("\n");
         for (String line : lines) {
             sb.append(INDENT).append(line).append("\n");
@@ -112,14 +116,14 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         sb.append("nodeType: IfStmt\n");
         
         sb.append("condition: |\n");
-        String conditionYaml = stmt.getCondition().accept(this);
+        String conditionYaml = visit(stmt.getCondition());
         String[] condLines = conditionYaml.split("\n");
         for (String line : condLines) {
             sb.append(INDENT).append(line).append("\n");
         }
         
         sb.append("thenBranch: |\n");
-        String thenYaml = stmt.getThenBranch().accept(this);
+        String thenYaml = visit(stmt.getThenBranch());
         String[] thenLines = thenYaml.split("\n");
         for (String line : thenLines) {
             sb.append(INDENT).append(line).append("\n");
@@ -127,7 +131,7 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         
         if (stmt.getElseBranch() != null) {
             sb.append("elseBranch: |\n");
-            String elseYaml = stmt.getElseBranch().accept(this);
+            String elseYaml = visit(stmt.getElseBranch());
             String[] elseLines = elseYaml.split("\n");
             for (String line : elseLines) {
                 sb.append(INDENT).append(line).append("\n");
@@ -149,7 +153,7 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         
         if (stmt.getInitializer() != null) {
             sb.append("initializer: |\n");
-            String initYaml = stmt.getInitializer().accept(this);
+            String initYaml = visit(stmt.getInitializer());
             String[] initLines = initYaml.split("\n");
             for (String line : initLines) {
                 sb.append(INDENT).append(line).append("\n");
@@ -160,7 +164,7 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         
         List<Stmt> body = stmt.getBody();
         for (int i = 0; i < body.size(); i++) {
-            String stmtYaml = body.get(i).accept(this);
+            String stmtYaml = visit(body.get(i));
             sb.append(INDENT).append("- ").append(stmtYaml.replace("\n", "\n" + INDENT + "  "));
             
             if (i < body.size() - 1) {
@@ -177,7 +181,7 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         sb.append("nodeType: LoopBreakTestStmt\n");
         
         sb.append("condition: |\n");
-        String conditionYaml = stmt.getCondition().accept(this);
+        String conditionYaml = visit(stmt.getCondition());
         String[] condLines = conditionYaml.split("\n");
         for (String line : condLines) {
             sb.append(INDENT).append(line).append("\n");
@@ -197,7 +201,7 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         sb.append("nodeType: PrintStmt\n");
         
         sb.append("expression: |\n");
-        String exprYaml = stmt.getExpression().accept(this);
+        String exprYaml = visit(stmt.getExpression());
         String[] exprLines = exprYaml.split("\n");
         for (String line : exprLines) {
             sb.append(INDENT).append(line).append("\n");
@@ -218,33 +222,9 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         
         if (stmt.getValue() != null) {
             sb.append("value: |\n");
-            String valueYaml = stmt.getValue().accept(this);
+            String valueYaml = visit(stmt.getValue());
             String[] valueLines = valueYaml.split("\n");
             for (String line : valueLines) {
-                sb.append(INDENT).append(line).append("\n");
-            }
-        }
-        
-        // Remove the last newline
-        if (sb.length() > 0) {
-            sb.setLength(sb.length() - 1);
-        }
-        
-        return sb.toString();
-    }
-
-    @Override
-    public String visitVarStmt(Var stmt) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("nodeType: VarStmt\n");
-        
-        appendSymbolTableInfo(sb, stmt.getEntry());
-        
-        if (stmt.getInitializer() != null) {
-            sb.append("initializer: |\n");
-            String initYaml = stmt.getInitializer().accept(this);
-            String[] initLines = initYaml.split("\n");
-            for (String line : initLines) {
                 sb.append(INDENT).append(line).append("\n");
             }
         }
@@ -265,7 +245,7 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         appendSymbolTableInfo(sb, expr.getEntry());
         
         sb.append("value: |\n");
-        String valueYaml = expr.getValue().accept(this);
+        String valueYaml = visit(expr.getValue());
         String[] valueLines = valueYaml.split("\n");
         for (String line : valueLines) {
             sb.append(INDENT).append(line).append("\n");
@@ -288,14 +268,14 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         sb.append("operator: \"").append(expr.getOperator()).append("\"\n");
         
         sb.append("left: |\n");
-        String leftYaml = expr.getLeft().accept(this);
+        String leftYaml = visit(expr.getLeft());
         String[] leftLines = leftYaml.split("\n");
         for (String line : leftLines) {
             sb.append(INDENT).append(line).append("\n");
         }
         
         sb.append("right: |\n");
-        String rightYaml = expr.getRight().accept(this);
+        String rightYaml = visit(expr.getRight());
         String[] rightLines = rightYaml.split("\n");
         for (String line : rightLines) {
             sb.append(INDENT).append(line).append("\n");
@@ -313,7 +293,7 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         // Get the callee (function identifier)
         FuncId callee = expr.getCallee();
         sb.append("callee: |\n");
-        String calleeYaml = callee.accept(this);
+        String calleeYaml = visit(callee);
         String[] calleeLines = calleeYaml.split("\n");
         for (String line : calleeLines) {
             sb.append(INDENT).append(line).append("\n");
@@ -325,7 +305,7 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         List<Expr> args = expr.getArguments();
         for (int i = 0; i < args.size(); i++) {
             sb.append(INDENT).append("- |\n");
-            String argYaml = args.get(i).accept(this);
+            String argYaml = visit(args.get(i));
             String[] argLines = argYaml.split("\n");
             for (String line : argLines) {
                 sb.append(INDENT).append(INDENT).append(line).append("\n");
@@ -337,10 +317,10 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         }
         
         // Get the function body
-        Stmt.Block codeBlock = expr.getCodeBlock();
+        Stmt.Block codeBlock = callee.getCodeBlock();
         if (codeBlock != null) {
             sb.append("codeBlock: |\n");
-            String codeYaml = codeBlock.accept(this);
+            String codeYaml = visit(codeBlock);
             String[] codeLines = codeYaml.split("\n");
             for (String line : codeLines) {
                 sb.append(INDENT).append(line).append("\n");
@@ -382,14 +362,14 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         sb.append("operator: \"").append(expr.getOperator()).append("\"\n");
         
         sb.append("left: |\n");
-        String leftYaml = expr.getLeft().accept(this);
+        String leftYaml = visit(expr.getLeft());
         String[] leftLines = leftYaml.split("\n");
         for (String line : leftLines) {
             sb.append(INDENT).append(line).append("\n");
         }
         
         sb.append("right: |\n");
-        String rightYaml = expr.getRight().accept(this);
+        String rightYaml = visit(expr.getRight());
         String[] rightLines = rightYaml.split("\n");
         for (String line : rightLines) {
             sb.append(INDENT).append(line).append("\n");
@@ -407,7 +387,7 @@ public class ASTYamlPrinter extends BaseASTVisitor<String> {
         sb.append("operator: \"").append(expr.getOperator()).append("\"\n");
         
         sb.append("operand: |\n");
-        String operandYaml = expr.getOperand().accept(this);
+        String operandYaml = visit(expr.getOperand());
         String[] operandLines = operandYaml.split("\n");
         for (String line : operandLines) {
             sb.append(INDENT).append(line).append("\n");

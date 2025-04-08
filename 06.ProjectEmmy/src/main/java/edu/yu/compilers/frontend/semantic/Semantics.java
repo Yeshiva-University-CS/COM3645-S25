@@ -66,6 +66,7 @@ public class Semantics extends EmmyBaseVisitor<Void> {
         entry.appendLineNumber(ctx.start.getLine());
         symTableStack.setProgramId(entry);
         symTableStack.getLocalSymTable().setOwner(entry);
+        ctx.entry = entry;
 
         // Visit all declarations
         for (EmmyParser.DeclarationContext decl : ctx.declaration()) {
