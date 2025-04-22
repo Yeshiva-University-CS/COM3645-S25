@@ -1,87 +1,118 @@
 package edu.yu.compilers.backend.compiler;
 
 import edu.yu.compilers.intermediate.ir.Tuple;
+import edu.yu.compilers.intermediate.ir.TupleIR;
 import edu.yu.compilers.intermediate.ir.Operand;
+import edu.yu.compilers.intermediate.ir.Operand.OperandType;
+import edu.yu.compilers.intermediate.ir.Operator;
 import edu.yu.compilers.intermediate.ir.TupleIR.FunctionInfo;
 
 import java.util.List;
 
 public class TACCodeGenerator extends CodeGenerator {
+    private static final int INDENT_SPACES = 4;
+    private String indent = "";
+    private String programLabel = "";
+
+    public TACCodeGenerator(TupleIR ir) {
+        super(ir);
+    }
+
+    private void indent() {
+        indent += " ".repeat(INDENT_SPACES);
+    }
 
     private void emit(String code) {
         output.append(code).append("\n");
     }
 
+    private void emitIndented(String code) {
+        output.append(indent).append(code).append("\n");
+    }
+
+    @Override
+    public void emitProgramStart() {
+        // Emit global variable declarations before the program label
+        List<TupleIR.VariableInfo> globalVars = ir.globalFunctionScope().getVariables().stream()
+                .filter(v -> !v.isParameter())
+                .sorted((v1, v2) -> v1.getName().compareTo(v2.getName()))
+                .toList();
+
+        // Emit global variables without indentation
+        for (TupleIR.VariableInfo var : globalVars) {
+            emit("global " + var.getName());
+        }
+
+        // Add an empty line before the program label if there are global variables
+        if (!globalVars.isEmpty()) {
+            emit("");
+        }
+    }
+
+    @Override
+    public void emitProgramEnd() {
+        emit(programLabel + "end:");
+        indent();
+        emitIndented("halt\n");
+    }
+
+    @Override
+    public void emitProgram(Tuple programTuple) {
+        // Save and Emit the program label
+        programLabel = programTuple.getOperands().get(0).toString();
+        emit(programLabel + ":");
+    }
+
+    @Override
+    public void emitEndProgram(Tuple endProgramTuple) {
+        emitIndented("goto " + programLabel + "end");
+        emit("");
+    }
+
     @Override
     public void emitFunctionStart(Tuple functionTuple, FunctionInfo info) {
-        // emit("// Function: " + info.getName());
-
         // Emit the function label
-        emit(functionTuple.getOperands().get(0) + ":");
+        String functionLabel = functionTuple.getOperands().get(0).toString();
+        emit(functionLabel + ":");
 
-        // // Emit function prologue
-        // emit("// Function prologue");
+        // Set indentation to a single level (4 spaces)
+        indent = " ".repeat(INDENT_SPACES);
 
-        // // Emit parameter declarations
-        // if (!info.getParameterNames().isEmpty()) {
-        //     emit("// Parameters");
-        //     for (String paramName : info.getParameterNames()) {
-        //         emit("param " + paramName);
-        //     }
-        // }
+        // Emit parameter declarations
+        info.getVariables().stream()
+                .filter(TupleIR.VariableInfo::isParameter)
+                .sorted((v1, v2) -> v1.getName().compareTo(v2.getName()))
+                .forEach(var -> emitIndented("param " + var.getName()));
 
-        // // Emit local variable declarations
-        // if (info.getLocalVariables() != null && !info.getLocalVariables().isEmpty()) {
-        //     emit("// Local variables");
-        //     for (Operand.Variable var : info.getLocalVariables()) {
-        //         emit("declare " + var.getName());
-        //     }
-        // }
-
-        // emit("// Begin function body");
+        // Emit local variable declarations
+        info.getVariables().stream()
+                .filter(v -> !v.isParameter())
+                .sorted((v1, v2) -> v1.getName().compareTo(v2.getName()))
+                .forEach(var -> emitIndented("local " + var.getName()));
     }
 
     @Override
     public void emitFunctionEnd(Tuple endFunctionTuple, FunctionInfo info) {
-        emit("// Function epilogue");
+        // Only emit a default return if the last tuple wasn't already a return
+        List<Tuple> tuples = info.getTuples();
+        if (!tuples.isEmpty() && tuples.get(tuples.size() - 2).getOperator() != Operator.RETURN) {
+            emitIndented("return");
+        }
 
-        // If there's no explicit return, add a default return
-        emit("return");
-
-        // End the function
-        emit(endFunctionTuple.getOperands().get(0) + "_end:");
-
-        emit("// End of function: " + info.getName());
-    }
-
-    @Override
-    protected void emitProgram(Tuple t) {
-        emit("// Program start");
-    }
-
-    @Override
-    protected void emitFunction(Tuple t) {
-        emit(t.getOperands().get(0) + ":");
-    }
-
-    @Override
-    protected void emitParam(Tuple t) {
-        emit("param " + t.getOperands().get(0));
-    }
-
-    @Override
-    protected void emitEndFunction(Tuple t) {
-        emit("// End function");
-    }
-
-    @Override
-    protected void emitDeclare(Tuple t) {
-        emit("declare " + t.getOperands().get(0));
+        // Reset indentation
+        indent = "";
+        emit(".end");
+        emit("");
     }
 
     @Override
     protected void emitAssign(Tuple t) {
-        emit(t.getOperands().get(0) + " := " + t.getOperands().get(1));
+        emitIndented(t.getOperands().get(0) + " := " + t.getOperands().get(1));
+    }
+
+    private void emitBinaryOp(Tuple t, String op) {
+        List<Operand> ops = t.getOperands();
+        emitIndented(ops.get(0) + " := " + ops.get(1) + " " + op + " " + ops.get(2));
     }
 
     @Override
@@ -106,12 +137,17 @@ public class TACCodeGenerator extends CodeGenerator {
 
     @Override
     protected void emitAnd(Tuple t) {
-        emitBinaryOp(t, "and");
+        emitBinaryOp(t, "&&");
     }
 
     @Override
     protected void emitOr(Tuple t) {
-        emitBinaryOp(t, "or");
+        emitBinaryOp(t, "||");
+    }
+
+    @Override
+    protected void emitNot(Tuple t) {
+        emitIndented(t.getOperands().get(0) + " := !" + t.getOperands().get(1));
     }
 
     @Override
@@ -144,61 +180,139 @@ public class TACCodeGenerator extends CodeGenerator {
         emitBinaryOp(t, "<=");
     }
 
-    private void emitBinaryOp(Tuple t, String op) {
-        List<Operand> ops = t.getOperands();
-        emit(ops.get(0) + " := " + ops.get(1) + " " + op + " " + ops.get(2));
-    }
-
-    @Override
-    protected void emitNot(Tuple t) {
-        emit(t.getOperands().get(0) + " := not " + t.getOperands().get(1));
-    }
-
-    @Override
-    protected void emitTemp(Tuple t) {
-        emit(t.getOperands().get(0) + " := temp " + t.getOperands().get(1));
-    }
-
     @Override
     protected void emitIf(Tuple t) {
-        emit("if " + t.getOperands().get(0) + " == 0 goto " + t.getOperands().get(1));
+        emitIndented("if " + t.getOperands().get(0) + " goto " + t.getOperands().get(1));
     }
 
     @Override
     protected void emitGoto(Tuple t) {
-        emit("goto " + t.getOperands().get(0));
+        emitIndented("goto " + t.getOperands().get(0));
     }
 
     @Override
     protected void emitLabel(Tuple t) {
+        // Save current indentation
+        String savedIndent = indent;
+        indent = "";
+
         emit(t.getOperands().get(0) + ":");
+
+        // Restore indentation
+        indent = savedIndent;
     }
 
     @Override
     protected void emitReturn(Tuple t) {
-        if (t.getOperands().isEmpty())
-            emit("return");
-        else
-            emit("return " + t.getOperands().get(0));
+        if (t.getOperands().isEmpty()) {
+            emitIndented("return");
+        } else {
+            emitIndented("return " + t.getOperands().get(0));
+        }
     }
 
     @Override
     protected void emitPrint(Tuple t) {
-        emit("print " + t.getOperands().get(0));
+        Operand operand = t.getOperands().get(0);
+
+        if (isStringConstant(operand)) {
+            // Special case for string constants - no need for format specifier
+            emitIndented("printf " + operand);
+        } else {
+            String formatStr = getFormatSpecifier(operand);
+            emitIndented("printf \"" + formatStr + "\", " + operand);
+        }
+    }
+
+    /**
+     * Checks if the operand is a string constant.
+     *
+     * @param operand the operand to check
+     * @return true if the operand is a string constant
+     */
+    private boolean isStringConstant(Operand operand) {
+        return operand instanceof Operand.Constant &&
+                ((Operand.Constant) operand).getType() == Operand.OperandType.STRING;
+    }
+
+    /**
+     * Helper method to get the appropriate format specifier for an operand.
+     * Uses %?" for dynamic types that can't be determined at compile time.
+     *
+     * @param operand the operand to get a format specifier for
+     * @return the format specifier string
+     */
+    private String getFormatSpecifier(Operand operand) {
+        OperandType type = getOperandType(operand);
+
+        switch (type) {
+            case INTEGER:
+                return "%d";
+            case FLOAT:
+                return "%f";
+            case BOOLEAN:
+                return "%s";
+            case STRING:
+                return "%s";
+            case NONE:
+                // For dynamic types, use "%?" to indicate the type is unknown at compile time
+                return "%?";
+            default:
+                return "%?";
+        }
+    }
+
+    /**
+     * Gets the type of an operand regardless of its specific class.
+     *
+     * @param operand the operand to get the type from
+     * @return the operand type, or NONE if not available
+     */
+    private OperandType getOperandType(Operand operand) {
+        if (operand instanceof Operand.Constant) {
+            return ((Operand.Constant) operand).getType();
+        } else if (operand instanceof Operand.Variable) {
+            return ((Operand.Variable) operand).getType();
+        } else if (operand instanceof Operand.Temporary) {
+            return ((Operand.Temporary) operand).getType();
+        }
+
+        return OperandType.NONE;
     }
 
     @Override
     protected void emitCall(Tuple t) {
         StringBuilder sb = new StringBuilder();
-        sb.append(t.getOperands().get(0)).append(" := call ").append(t.getOperands().get(1));
-        if (t.getOperands().size() > 2) {
-            sb.append(" with args ");
-            for (int i = 2; i < t.getOperands().size(); i++) {
-                sb.append(t.getOperands().get(i));
-                if (i < t.getOperands().size() - 1)
-                    sb.append(", ");
-            }
+
+        // Handle return value if present
+        if (t.getOperands().size() > 1) {
+            sb.append(t.getOperands().get(0)).append(" := ");
         }
-        emit(sb.toString());
+
+        // Add call and function name
+        sb.append("call ").append(t.getOperands().get(1));
+
+        // Add arguments if present
+        if (t.getOperands().size() > 2) {
+            sb.append("(");
+            for (int i = 2; i < t.getOperands().size(); i++) {
+                if (i > 2)
+                    sb.append(", ");
+                sb.append(t.getOperands().get(i));
+            }
+            sb.append(")");
+        }
+
+        emitIndented(sb.toString());
+    }
+
+    @Override
+    protected void emitTemp(Tuple t) {
+        emitIndented(t.getOperands().get(0) + " := " + t.getOperands().get(1));
+    }
+
+    @Override
+    protected void emitUnknown(Tuple t) {
+        emitIndented("// Unknown operation: " + t.getOperator());
     }
 }

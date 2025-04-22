@@ -9,7 +9,6 @@ import java.util.Set;
 
 import edu.yu.compilers.intermediate.ast.BaseASTVisitor;
 import edu.yu.compilers.intermediate.ast.Expr;
-import edu.yu.compilers.intermediate.ast.Oper;
 import edu.yu.compilers.intermediate.ast.Expr.Assign;
 import edu.yu.compilers.intermediate.ast.Expr.Binary;
 import edu.yu.compilers.intermediate.ast.Expr.Call;
@@ -149,7 +148,7 @@ public class TupleIRBuilder extends BaseASTVisitor<Object> {
 
         SymTable symTable = program.getEntry().getRoutineSymTable();
 
-        processVariables(symTable);
+        processVariables(symTable, new ArrayList<>());
         processStatements(program.getStatements());
 
         while (!functionDefinitions.isEmpty()) {
@@ -165,7 +164,7 @@ public class TupleIRBuilder extends BaseASTVisitor<Object> {
 
             SymTable functionSymTable = funcEntry.getRoutineSymTable();
 
-            processVariables(functionSymTable);
+            processVariables(functionSymTable, funcEntry.getRoutineParameters());
             processStatements(funcBlock.getStatements());
 
             ir.addTuple(TupleFactory.createEndFunction(funcLabel));
@@ -181,7 +180,7 @@ public class TupleIRBuilder extends BaseASTVisitor<Object> {
         return null;
     }
 
-    private void processVariables(SymTable symTable) {
+    private void processVariables(SymTable symTable, List<SymTableEntry> parameters) {
         List<SymTableEntry> entries = symTable.sortedEntries().stream()
                 .filter(entry -> entry.getKind() == SymTableEntry.Kind.VARIABLE || entry.getKind() == SymTableEntry.Kind.VALUE_PARAMETER)
                 .toList();
@@ -189,6 +188,9 @@ public class TupleIRBuilder extends BaseASTVisitor<Object> {
         for (SymTableEntry entry : entries) {
             OperandType type = convertTypespec(entry.getType());
             VariableInfo varInfo = new VariableInfo(entry, type);
+            if (parameters.contains(entry)) {
+                varInfo.setParamIndex(parameters.indexOf(entry));
+            }
             ir.addVariable(varInfo);
         }
     }

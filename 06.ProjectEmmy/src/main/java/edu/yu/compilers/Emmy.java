@@ -10,7 +10,9 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import antlr4.EmmyLexer;
 import antlr4.EmmyParser;
+import edu.yu.compilers.backend.compiler.CodeGenerator;
 import edu.yu.compilers.backend.compiler.Compiler;
+import edu.yu.compilers.backend.compiler.X86_64CodeGenerator;
 import edu.yu.compilers.backend.compiler.TACCodeGenerator;
 import edu.yu.compilers.backend.irgen.TupleIRBuilder;
 import edu.yu.compilers.frontend.ast.ASTBuilder;
@@ -23,8 +25,8 @@ import edu.yu.compilers.intermediate.ir.TupleIRUtils;
 
 public class Emmy {
     public static void main(String[] args) throws Exception {
-        if (args.length != 2) {
-            System.out.println("USAGE: Emmy {-type | -ast | -ir | -execute | -convert | -compile} sourceFileName");
+        if (args.length < 2) {
+            printUsage();
             return;
         }
 
@@ -33,8 +35,6 @@ public class Emmy {
         }
 
         String option = args[0];
-        String sourceFileName = args[1];
-
         Mode mode = switch (option.toLowerCase()) {
             case "-type" -> Mode.TYPE;
             case "-ast" -> Mode.AST;
@@ -43,8 +43,7 @@ public class Emmy {
             case "-convert" -> Mode.CONVERT;
             case "-compile" -> Mode.COMPILE;
             default -> {
-                System.out.println("ERROR: Invalid option.");
-                System.out.println("USAGE: Emmy {-type | -ast | -ir | -execute | -convert | -compile} sourceFileName");
+                printUsage();
                 yield null;
             }
         };
@@ -52,6 +51,27 @@ public class Emmy {
         if (mode == null) {
             return;
         }
+
+        // Handle compile mode specially as it needs an extra argument
+        if (mode == Mode.COMPILE) {
+            if (args.length != 3) {
+                System.out.println("ERROR: Compile mode requires codegen type and source file.");
+                System.out.println("USAGE: Emmy -compile {tac|x86} sourceFileName");
+                return;
+            }
+            String codegenType = args[1].toLowerCase();
+            if (!codegenType.equals("tac") && !codegenType.equals("x86")) {
+                System.out.println("ERROR: Invalid codegen type. Must be either 'tac' or 'x86'");
+                System.out.println("USAGE: Emmy -compile {tac|x86} sourceFileName");
+                return;
+            }
+        } else if (args.length != 2) {
+            printUsage();
+            return;
+        }
+
+        // Get the source file name (it's arg[2] for compile mode, arg[1] for others)
+        String sourceFileName = (mode == Mode.COMPILE) ? args[2] : args[1];
 
         // Create the input stream.
         InputStream source = new FileInputStream(sourceFileName);
@@ -136,14 +156,20 @@ public class Emmy {
                 // Pass 3: Compile the Emmy program.
                 System.out.println("\nPASS 3 Compile:");
                 System.out.println("---------------");
-                TACCodeGenerator codegen = new TACCodeGenerator();
+                CodeGenerator codegen = args[1].equals("tac") 
+                    ? new TACCodeGenerator(ir) 
+                    : new X86_64CodeGenerator(ir);
                 Compiler compiler = new Compiler(codegen);
                 System.out.println(compiler.compile(ir));
             }
             default -> {
-                System.out.println("ERROR: Invalid option.");
-                System.out.println("USAGE: Emmy {-type | -ast | -ir | -execute | -convert | -compile} sourceFileName");
+                printUsage();
             }
         }
+    }
+
+    private static void printUsage() {
+        System.out.println("USAGE: Emmy {-type | -ast | -ir | -execute | -convert} sourceFileName");
+        System.out.println("   OR: Emmy -compile {tac|x86} sourceFileName");
     }
 }

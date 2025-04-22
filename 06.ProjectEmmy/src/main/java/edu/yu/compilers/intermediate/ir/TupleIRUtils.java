@@ -38,12 +38,12 @@ public class TupleIRUtils {
             // Print out parameters and variables.
             // Do parameters first, then variables. Sort within each group by name
 
-            func.getVariables().stream().filter(TupleIR.VariableInfo::isParameter)
-                    .sorted((v1, v2) -> v1.getName().compareTo(v2.getName()))
+            func.getParameters().stream()
+                    .sorted((v1, v2) -> v1.getParamIndex() - v2.getParamIndex())
                     .forEach(var -> sb.append("param ").append(var.getName()).append(" : ").append(var.getType())
                             .append("\n"));
 
-            func.getVariables().stream().filter(v -> !v.isParameter())
+            func.getLocalVariables().stream()
                     .sorted((v1, v2) -> v1.getName().compareTo(v2.getName()))
                     .forEach(var -> sb.append("var ").append(var.getName()).append(" : ").append(var.getType())
                             .append("\n"));

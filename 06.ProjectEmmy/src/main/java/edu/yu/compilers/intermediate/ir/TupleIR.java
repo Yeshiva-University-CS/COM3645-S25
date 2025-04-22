@@ -88,6 +88,16 @@ public class TupleIR {
             return Collections.unmodifiableList(variables.values().stream().toList());
         }
 
+        public List<VariableInfo> getParameters() {
+            return Collections.unmodifiableList(variables.values().stream().
+                    filter(VariableInfo::isParameter).toList());
+        }
+
+        public List<VariableInfo> getLocalVariables() {
+            return Collections.unmodifiableList(variables.values().stream().
+                    filter(VariableInfo::isLocalVariable).toList());
+        }
+
         public void addVariable(VariableInfo var) {
             variables.put(var.getEntry(), var);
         }
@@ -132,6 +142,10 @@ public class TupleIR {
 
         public OperandType getType() {
             return type;
+        }
+
+        public boolean isLocalVariable() {
+            return entry.isVariable();
         }
 
         public boolean isParameter() {

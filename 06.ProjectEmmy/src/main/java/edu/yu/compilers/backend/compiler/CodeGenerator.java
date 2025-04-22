@@ -1,6 +1,7 @@
 package edu.yu.compilers.backend.compiler;
 
 import edu.yu.compilers.intermediate.ir.Tuple;
+import edu.yu.compilers.intermediate.ir.TupleIR;
 import edu.yu.compilers.intermediate.ir.TupleIR.FunctionInfo;
 
 /**
@@ -8,7 +9,12 @@ import edu.yu.compilers.intermediate.ir.TupleIR.FunctionInfo;
  */
 public abstract class CodeGenerator {
 
-    protected final StringBuilder output = new StringBuilder();
+    protected StringBuilder output = new StringBuilder();
+    protected final TupleIR ir;
+
+    protected CodeGenerator(TupleIR ir) {
+        this.ir = ir;
+    }
 
     /**
      * Process a single tuple and emit code.
@@ -18,6 +24,7 @@ public abstract class CodeGenerator {
     public final void emitTuple(Tuple tuple) {
         switch (tuple.getOperator()) {
             case PROGRAM -> emitProgram(tuple);
+            case END_PROGRAM -> emitEndProgram(tuple);
             case FUNCTION -> emitFunction(tuple);
             case PARAM -> emitParam(tuple);
             case END_FUNCTION -> emitEndFunction(tuple);
@@ -44,6 +51,26 @@ public abstract class CodeGenerator {
             case TEMP -> emitTemp(tuple);
             default -> emitUnknown(tuple);
         }
+    }
+
+    /**
+     * Process the start of the program.
+     */
+    public void emitProgramStart() {
+        // Default implementation is empty
+    }
+
+    /**
+     * Process the end of the program.
+     */
+    public void emitProgramEnd() {
+        // Default implementation is empty
+    }
+
+    protected void emitProgram(Tuple tuple) {
+    }
+
+    protected void emitEndProgram(Tuple tuple) {
     }
 
     /**
@@ -75,9 +102,6 @@ public abstract class CodeGenerator {
      */
     public StringBuilder getOutput() {
         return output;
-    }
-
-    protected void emitProgram(Tuple tuple) {
     }
 
     protected void emitFunction(Tuple tuple) {
