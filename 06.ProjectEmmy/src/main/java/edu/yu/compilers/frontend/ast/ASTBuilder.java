@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import antlr4.EmmyParser;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import antlr4.EmmyBaseVisitor;
@@ -49,6 +50,7 @@ import edu.yu.compilers.intermediate.ast.Stmt;
 import edu.yu.compilers.intermediate.ast.Expr.Assign;
 import edu.yu.compilers.intermediate.symbols.Predefined;
 import edu.yu.compilers.intermediate.symbols.SymTableEntry;
+import edu.yu.compilers.intermediate.symbols.SymTableStack;
 import edu.yu.compilers.intermediate.types.TypeChecker;
 
 /**
@@ -59,7 +61,8 @@ import edu.yu.compilers.intermediate.types.TypeChecker;
  */
 public class ASTBuilder extends EmmyBaseVisitor<Object> {
 
-    public static Program build(ParseTree tree) {
+    public static Program build(ParseTree tree, SymTableStack symTableStack) {
+        ASTFactory.setSymbolTableStack(symTableStack);
         ASTBuilder builder = new ASTBuilder();
         builder.visit(tree);
         return builder.getProgam();
@@ -200,6 +203,12 @@ public class ASTBuilder extends EmmyBaseVisitor<Object> {
         Stmt body = (Stmt) visit(ctx.body);
 
         return ASTFactory.createRepeatStmt(count, body);
+    }
+
+    @Override
+    public Stmt.Empty visitEmptyStatement(EmmyParser.EmptyStatementContext ctx)
+    {
+        return ASTFactory.createEmptyStmt();
     }
 
     @Override

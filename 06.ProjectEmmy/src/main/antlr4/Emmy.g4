@@ -40,6 +40,7 @@ statement
     | untilStmt    # stmtUntil
     | repeatStmt   # stmtRepeat
     | block        # stmtBlock
+    | emptyStmt    # stmtEmpty
     ;
 
 exprStmt : expression ';' # expressionStatement;
@@ -53,9 +54,11 @@ returnStmt : 'return' value=expression? ';' # returnStatement;
 
 whileStmt : 'while' '(' condition=expression ')' body=statement # whileStatement;
 
-untilStmt : 'loop' body=statement 'until' '(' condition=expression ')'  # untilStatement;
+untilStmt : 'loop' body=statement 'until' '(' condition=expression ')' ';' # untilStatement;
 
 repeatStmt : 'repeat' count=expression 'times' body=statement # repeatStatement;
+
+emptyStmt : ';' # emptyStatement;
 
 block : '{' (declarations+=declaration)* '}' # blockStatement;
 

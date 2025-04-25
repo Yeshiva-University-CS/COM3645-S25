@@ -85,6 +85,16 @@ public class TupleIRBuilder extends BaseASTVisitor<Object> {
         return new Label(prefix + "_" + labelCounter++);
     }
 
+    private List<Label> createLabelSet(String... prefixes) {
+        int counter = labelCounter++;
+        List<Label> labels = new ArrayList<>();
+        for (String prefix : prefixes) {
+            Label label = new Label(prefix + "_" + counter);
+            labels.add(label);
+        }
+        return labels;
+    }
+
     /**
      * Convert a Typespec to an OperandType for the IR.
      * 
@@ -252,8 +262,9 @@ public class TupleIRBuilder extends BaseASTVisitor<Object> {
     @Override
     public Void visitLoopStmt(Loop stmt) {
         // Generate labels for loop start and end
-        Label startLabel = createLabel("loop_start");
-        Label endLabel = createLabel("loop_end");
+        List<Label> labelSet = createLabelSet("loop_start", "loop_end");
+        Label startLabel = labelSet.get(0);
+        Label endLabel = labelSet.get(1);
 
         // Store labels for potential nested break statements
         loopStartLabels.put(stmt, startLabel);

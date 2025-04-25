@@ -21,9 +21,12 @@ public class ASTFactory {
     // Symbol table stack for creating temporary variables
     private static SymTableStack symTableStack;
 
+    // Counter for generating unique temporary variable names
+    private static int tempCounter = 0;
+
     /**
      * Set the symbol table stack for the factory to use.
-     * 
+     *
      * @param stack the symbol table stack
      */
     public static void setSymbolTableStack(SymTableStack stack) {
@@ -32,7 +35,7 @@ public class ASTFactory {
 
     /**
      * Create a temporary variable for internal use in AST transformations.
-     * 
+     *
      * @param name base name for the variable
      * @return symbol table entry for the temporary variable
      */
@@ -41,8 +44,8 @@ public class ASTFactory {
             throw new IllegalStateException("Symbol table stack not initialized");
         }
 
-        // Create a unique name for the temporary variable
-        String tempName = "_temp_" + name + "_" + System.nanoTime();
+        // Create a unique name for the temporary variable using a counter
+        String tempName = "_cnt" + (tempCounter++);
 
         // Create a symbol table entry for the temporary variable
         SymTableEntry entry = symTableStack.enterLocal(tempName, Kind.VARIABLE);
@@ -55,7 +58,7 @@ public class ASTFactory {
 
     /**
      * Create a block statement.
-     * 
+     *
      * @param entry      symbol table entry for the program
      * @param statements the list of statements in the program
      * @return a Program node
@@ -66,7 +69,7 @@ public class ASTFactory {
 
     /**
      * Create a variable identifier expression.
-     * 
+     *
      * @param entry symbol table entry for the variable identifier
      * @return an variable identifier expression node
      */
@@ -76,7 +79,7 @@ public class ASTFactory {
 
     /**
      * Create a function identifier expression.
-     * 
+     *
      * @param entry     symbol table entry for the function identifier
      * @param codeBlock the function's code block
      * @return an function identifier expression node
@@ -87,7 +90,7 @@ public class ASTFactory {
 
     /**
      * Create a literal expression.
-     * 
+     *
      * @param value the literal value
      * @return a literal expression node
      */
@@ -97,7 +100,7 @@ public class ASTFactory {
 
     /**
      * Create a unary expression.
-     * 
+     *
      * @param operator the unary operator
      * @param operand  the operand expression
      * @return a unary expression node
@@ -108,7 +111,7 @@ public class ASTFactory {
 
     /**
      * Create a binary expression.
-     * 
+     *
      * @param left     the left operand expression
      * @param operator the binary operator
      * @param right    the right operand expression
@@ -120,7 +123,7 @@ public class ASTFactory {
 
     /**
      * Create a logical expression.
-     * 
+     *
      * @param left     the left operand expression
      * @param operator the logical operator
      * @param right    the right operand expression
@@ -132,7 +135,7 @@ public class ASTFactory {
 
     /**
      * Create an assignment expression.
-     * 
+     *
      * @param entry symbol table entry for the variable
      * @param value the expression to assign
      * @return an assignment expression node
@@ -143,7 +146,7 @@ public class ASTFactory {
 
     /**
      * Create a function call expression.
-     * 
+     *
      * @param Expr      of the function to call
      * @param arguments the argument expressions
      * @return a call expression node
@@ -154,7 +157,7 @@ public class ASTFactory {
 
     /**
      * Create a function call expression with no arguments.
-     * 
+     *
      * @param Expr of the function to call
      * @return a call expression node
      */
@@ -164,7 +167,7 @@ public class ASTFactory {
 
     /**
      * Create an expression statement.
-     * 
+     *
      * @param expression the expression
      * @return an expression statement node
      */
@@ -174,7 +177,7 @@ public class ASTFactory {
 
     /**
      * Create a print statement.
-     * 
+     *
      * @param expression the expression to print
      * @return a print statement node
      */
@@ -184,7 +187,7 @@ public class ASTFactory {
 
     /**
      * Create a block statement.
-     * 
+     *
      * @param statements the list of statements in the block
      * @return a block statement node
      */
@@ -194,7 +197,7 @@ public class ASTFactory {
 
     /**
      * Create an empty statement.
-     * 
+     *
      * @return an empty statement node
      */
     public static Stmt.Empty createEmptyStmt() {
@@ -203,7 +206,7 @@ public class ASTFactory {
 
     /**
      * Create an if statement.
-     * 
+     *
      * @param condition  the condition expression
      * @param thenBranch the then branch statement
      * @param elseBranch the else branch statement (may be null)
@@ -215,7 +218,7 @@ public class ASTFactory {
 
     /**
      * Create a loop statement.
-     * 
+     *
      * @param initializer the initializer variable declaration
      * @param body        the loop body statements
      * @return a loop statement node
@@ -226,7 +229,7 @@ public class ASTFactory {
 
     /**
      * Create a loop break test statement.
-     * 
+     *
      * @param condition the break condition expression
      * @return a loop break test statement node
      */
@@ -236,7 +239,7 @@ public class ASTFactory {
 
     /**
      * Create a return statement.
-     * 
+     *
      * @param value the return value expression (may be null)
      * @return a return statement node
      */
@@ -246,7 +249,7 @@ public class ASTFactory {
 
     /**
      * Convert an operator token to the corresponding OpType.
-     * 
+     *
      * @param operStr the operator string from the parser
      * @return the corresponding OpType
      */
@@ -291,7 +294,7 @@ public class ASTFactory {
 
     /**
      * Create a while statement by translating it to the appropriate Loop structure.
-     * 
+     *
      * @param condition the loop condition
      * @param body      the loop body statement
      * @return a Loop statement representing the while loop
@@ -325,7 +328,7 @@ public class ASTFactory {
      * Create an until statement by translating it to the appropriate Loop
      * structure.
      * The until loop executes the body until the condition becomes true.
-     * 
+     *
      * @param body      the loop body statement
      * @param condition the until condition
      * @return a Loop statement representing the until loop
@@ -357,7 +360,7 @@ public class ASTFactory {
      * Create a repeat statement by translating it to the appropriate Loop
      * structure.
      * The repeat loop executes the body a specified number of times.
-     * 
+     *
      * @param count the expression that evaluates to the number of repetitions
      * @param body  the loop body statement
      * @return a Loop statement representing the repeat loop

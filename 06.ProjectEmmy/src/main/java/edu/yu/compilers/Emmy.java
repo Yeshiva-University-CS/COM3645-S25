@@ -124,7 +124,7 @@ public class Emmy {
         // Pass 2B: Build the AST
         System.out.println("\nPASS 2B Build AST IR:");
         System.out.println("---------------------");
-        Program program = ASTBuilder.build(tree);
+        Program program = ASTBuilder.build(tree, pass2.getSymTableStack());
         ASTYamlPrinter.print(program);
 
         if (mode.equals(Mode.AST)) {
