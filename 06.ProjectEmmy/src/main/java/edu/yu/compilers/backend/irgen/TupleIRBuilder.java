@@ -270,13 +270,13 @@ public class TupleIRBuilder extends BaseASTVisitor<Object> {
         loopStartLabels.put(stmt, startLabel);
         loopEndLabels.put(stmt, endLabel);
 
-        // Add LABEL for loop start
-        ir.addTuple(TupleFactory.createLabel(startLabel));
-
         // Visit initializer if it exists
         if (stmt.getInitializer() != null) {
             visit(stmt.getInitializer());
         }
+
+        // Add LABEL for loop start
+        ir.addTuple(TupleFactory.createLabel(startLabel));
 
         // Visit all statements in the loop body
         for (Stmt s : stmt.getBody()) {
