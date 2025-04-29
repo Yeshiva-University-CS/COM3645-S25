@@ -169,7 +169,7 @@ public class TupleIRBuilder extends BaseASTVisitor<Object> {
 
             ir.enterFunctionScope(funcEntry.getName());
 
-            Label funcLabel = new Label(funcEntry.getName() + "_func");
+            Label funcLabel = new Label(funcEntry.getName());
             ir.addTuple(TupleFactory.createFunction(funcLabel));
 
             SymTable functionSymTable = funcEntry.getRoutineSymTable();

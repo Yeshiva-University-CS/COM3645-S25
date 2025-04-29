@@ -377,6 +377,11 @@ public class ASTFactory {
         // Create the loop body statements
         List<Stmt> loopBody = new ArrayList<>();
 
+        // Break test: counter >= count
+        Expr breakCondition = createBinary(createVarId(counterEntry), Oper.GE, count);
+        Stmt.Loop.BreakTest breakTest = createLoopBreakTestStmt(breakCondition);
+        loopBody.add(breakTest);
+
         // If body is a block, add all its statements, otherwise add the single
         // statement
         if (body instanceof Stmt.Block) {
@@ -390,11 +395,6 @@ public class ASTFactory {
         Expr plusOne = createBinary(varExpr, Oper.ADD, createLiteral(1));
         Expr.Assign incrementExpr = createAssign(counterEntry, plusOne);
         loopBody.add(createExpressionStmt(incrementExpr));
-
-        // Break test: counter >= count
-        Expr breakCondition = createBinary(createVarId(counterEntry), Oper.GE, count);
-        Stmt.Loop.BreakTest breakTest = createLoopBreakTestStmt(breakCondition);
-        loopBody.add(breakTest);
 
         // Create and return the loop
         return createLoopStmt(initializer, loopBody);

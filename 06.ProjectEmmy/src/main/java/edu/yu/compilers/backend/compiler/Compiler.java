@@ -29,35 +29,18 @@ public class Compiler {
             codeGenerator.emitProgramStart();
         }
 
-        // Process program body tuples
-        for (Tuple tuple : programScope.getTuples()) {
-            codeGenerator.emitTuple(tuple);
-        }
-
         // Process all function scopes after the program end
         List<FunctionInfo> functionList = ir.getFunctionList();
         for (FunctionInfo functionInfo : functionList) {
-            // Skip the global scope as we've already processed it
-            if (functionInfo == programScope) {
-                continue;
-            }
-
             List<Tuple> functionTuples = functionInfo.getTuples();
-            if (functionTuples.isEmpty()) {
-                continue;
-            }
 
             // Emit function start
             codeGenerator.emitFunctionStart(functionTuples.get(0), functionInfo);
 
-            // Process function body tuples (skip first and last tuples which are FUNCTION and END_FUNCTION)
-            for (int i = 1; i < functionTuples.size() - 1; i++) {
-                Tuple tuple = functionTuples.get(i);
+            // Process function body tuples
+            for (Tuple tuple : functionTuples) {
                 codeGenerator.emitTuple(tuple);
             }
-
-            // Emit function end
-            codeGenerator.emitFunctionEnd(functionTuples.get(functionTuples.size() - 1), functionInfo);
         }
 
         // Emit program end
@@ -65,8 +48,7 @@ public class Compiler {
             codeGenerator.emitProgramEnd();
         }
 
-
         // Return the generated code
-        return codeGenerator.getOutput().toString();
+        return codeGenerator.getOutput();
     }
 }

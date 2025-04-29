@@ -1,8 +1,16 @@
-# A simple Emmy program that calculates 1+1
-var result = 1 + 1;
-print result;
+repeat 0 times { print "hi"; }
+repeat 4 times { print "hi"; }
+var i=0;
+loop { print i; i = i + 1; } until (i == 5);
+while (i > 0) { print i; i = i - 1; }
+let add x y = {
+    var z = 1;
+    return x + y + z;
+}
+print add(12, 65);
 
-let myfunc x y = x + y;
 
-print myfunc(1,1);
+
+
+
 

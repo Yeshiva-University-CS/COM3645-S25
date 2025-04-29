@@ -4,7 +4,6 @@ import edu.yu.compilers.intermediate.ir.Tuple;
 import edu.yu.compilers.intermediate.ir.TupleIR;
 import edu.yu.compilers.intermediate.ir.Operand;
 import edu.yu.compilers.intermediate.ir.Operand.OperandType;
-import edu.yu.compilers.intermediate.ir.Operator;
 import edu.yu.compilers.intermediate.ir.TupleIR.FunctionInfo;
 
 import java.util.List;
@@ -13,6 +12,7 @@ public class TACCodeGenerator extends CodeGenerator {
     private static final int INDENT_SPACES = 4;
     private String indent = "";
     private String programLabel = "";
+    private StringBuilder output = new StringBuilder();
 
     public TACCodeGenerator(TupleIR ir) {
         super(ir);
@@ -22,12 +22,21 @@ public class TACCodeGenerator extends CodeGenerator {
         indent += " ".repeat(INDENT_SPACES);
     }
 
+    private void dedent() {
+        indent = indent.substring(0, Math.max(0, indent.length() - INDENT_SPACES));
+    }
+
     private void emit(String code) {
         output.append(code).append("\n");
     }
 
     private void emitIndented(String code) {
         output.append(indent).append(code).append("\n");
+    }
+
+    @Override
+    public String getOutput() {
+        return output.toString();
     }
 
     @Override
@@ -51,22 +60,9 @@ public class TACCodeGenerator extends CodeGenerator {
 
     @Override
     public void emitProgramEnd() {
-        emit(programLabel + "end:");
+        emit(programLabel + "_end:");
         indent();
         emitIndented("halt\n");
-    }
-
-    @Override
-    public void emitProgram(Tuple programTuple) {
-        // Save and Emit the program label
-        programLabel = programTuple.getOperands().get(0).toString();
-        emit(programLabel + ":");
-    }
-
-    @Override
-    public void emitEndProgram(Tuple endProgramTuple) {
-        emitIndented("goto " + programLabel + "end");
-        emit("");
     }
 
     @Override
@@ -75,35 +71,43 @@ public class TACCodeGenerator extends CodeGenerator {
         String functionLabel = functionTuple.getOperands().get(0).toString();
         emit(functionLabel + ":");
 
-        // Set indentation to a single level (4 spaces)
-        indent = " ".repeat(INDENT_SPACES);
+        indent();
 
         // Emit parameter declarations
-        info.getVariables().stream()
-                .filter(TupleIR.VariableInfo::isParameter)
-                .sorted((v1, v2) -> v1.getName().compareTo(v2.getName()))
+        info.getParameters().stream()
+                .sorted((v1, v2) -> v1.getParamIndex() - v2.getParamIndex())
                 .forEach(var -> emitIndented("param " + var.getName()));
 
         // Emit local variable declarations
-        info.getVariables().stream()
-                .filter(v -> !v.isParameter())
-                .sorted((v1, v2) -> v1.getName().compareTo(v2.getName()))
-                .forEach(var -> emitIndented("local " + var.getName()));
+        if (!info.isGlobalLevel()) {
+            info.getLocalVariables().stream()
+                    .sorted((v1, v2) -> v1.getName().compareTo(v2.getName()))
+                    .forEach(var -> emitIndented("local " + var.getName()));
+        }
+    }
+
+    // ==================
+    // Tuples processing
+    // ==================
+
+    @Override
+    public void emitProgram(Tuple programTuple) {
+        programLabel = programTuple.getOperands().get(0).toString();
     }
 
     @Override
-    public void emitFunctionEnd(Tuple endFunctionTuple, FunctionInfo info) {
-        // Only emit a default return if the last tuple wasn't already a return
-        List<Tuple> tuples = info.getTuples();
-        if (!tuples.isEmpty() && tuples.get(tuples.size() - 2).getOperator() != Operator.RETURN) {
-            emitIndented("return");
-        }
-
-        // Reset indentation
-        indent = "";
-        emit(".end");
+    public void emitEndProgram(Tuple endProgramTuple) {
+        emitIndented("goto " + programLabel + "_end");
+        dedent();
         emit("");
     }
+
+    @Override
+    public void emitEndFunction(Tuple functionTuple) {
+        dedent();
+        emit("");
+    }
+
 
     @Override
     protected void emitAssign(Tuple t) {

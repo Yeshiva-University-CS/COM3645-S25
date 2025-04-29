@@ -24,6 +24,8 @@ import edu.yu.compilers.intermediate.ir.TupleIR;
 import edu.yu.compilers.intermediate.ir.TupleIRUtils;
 
 public class Emmy {
+    static boolean compileMode;
+
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
             printUsage();
@@ -121,21 +123,22 @@ public class Emmy {
             return;
         }
 
-        // Pass 2B: Build the AST
-        System.out.println("\nPASS 2B Build AST IR:");
-        System.out.println("---------------------");
-        Program program = ASTBuilder.build(tree, pass2.getSymTableStack());
-        ASTYamlPrinter.print(program);
+        compileMode = mode == Mode.COMPILE;
 
+        // Pass 2B: Build the AST
+        println("\nPASS 2B Build AST IR:");
+        println("---------------------");
+        Program program = ASTBuilder.build(tree, pass2.getSymTableStack());
         if (mode.equals(Mode.AST)) {
+            ASTYamlPrinter.print(program);
             return;
         }
 
         // Pass 2C: Build the IR
-        System.out.println("\nPASS 2C Build IR:");
-        System.out.println("-----------------");
+        println("\nPASS 2C Build IR:");
+        println("-----------------");
         TupleIR ir = TupleIRBuilder.build(program);
-        System.out.print(TupleIRUtils.printIR(ir));
+        println(TupleIRUtils.printIR(ir));
 
         if (mode.equals(Mode.IR)) {
             return;
@@ -144,8 +147,8 @@ public class Emmy {
         switch (mode) {
             case EXECUTE -> {
                 // Pass 3: Execute the Emmy program.
-                System.out.println("\nPASS 3 Execute: ");
-                System.out.print("\nTBD:\n\n");
+                println("\nPASS 3 Execute: ");
+                println("\nTBD:\n\n");
             }
             case CONVERT -> {
                 // Pass 3: Convert from Emmy to Java.
@@ -154,9 +157,7 @@ public class Emmy {
             }
             case COMPILE -> {
                 // Pass 3: Compile the Emmy program.
-                System.out.println("\nPASS 3 Compile:");
-                System.out.println("---------------");
-                CodeGenerator codegen = args[1].equals("tac") 
+                CodeGenerator codegen = args[1].equals("tac")
                     ? new TACCodeGenerator(ir) 
                     : new X86_64CodeGenerator(ir);
                 Compiler compiler = new Compiler(codegen);
@@ -171,5 +172,10 @@ public class Emmy {
     private static void printUsage() {
         System.out.println("USAGE: Emmy {-type | -ast | -ir | -execute | -convert} sourceFileName");
         System.out.println("   OR: Emmy -compile {tac|x86} sourceFileName");
+    }
+
+    private static void println(String str) {
+        if (! compileMode)
+            System.out.println(str);
     }
 }

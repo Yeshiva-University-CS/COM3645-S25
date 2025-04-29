@@ -9,7 +9,6 @@ import edu.yu.compilers.intermediate.ir.TupleIR.FunctionInfo;
  */
 public abstract class CodeGenerator {
 
-    protected StringBuilder output = new StringBuilder();
     protected final TupleIR ir;
 
     protected CodeGenerator(TupleIR ir) {
@@ -17,11 +16,31 @@ public abstract class CodeGenerator {
     }
 
     /**
+     * Process the start of the program.
+     */
+    public void emitProgramStart() {
+    }
+
+    /**
+     * Process the end of the program.
+     */
+    public void emitProgramEnd() {
+    }
+
+    /**
+     * Process the start of a function. This is called once per function
+     * with detailed function information.
+     */
+    public void emitFunctionStart(Tuple functionTuple, FunctionInfo info) {
+        emitFunction(functionTuple);
+    }
+
+    /**
      * Process a single tuple and emit code.
-     * 
-     * @param tuple the tuple to process
      */
     public final void emitTuple(Tuple tuple) {
+        onEmitTuple(tuple);
+
         switch (tuple.getOperator()) {
             case PROGRAM -> emitProgram(tuple);
             case END_PROGRAM -> emitEndProgram(tuple);
@@ -53,55 +72,18 @@ public abstract class CodeGenerator {
         }
     }
 
-    /**
-     * Process the start of the program.
-     */
-    public void emitProgramStart() {
-        // Default implementation is empty
+    public String getOutput() {
+        return "";
     }
 
-    /**
-     * Process the end of the program.
-     */
-    public void emitProgramEnd() {
-        // Default implementation is empty
-    }
+    // ====================================
+    // Individual tuple processing methods
+    // ====================================
 
     protected void emitProgram(Tuple tuple) {
     }
 
     protected void emitEndProgram(Tuple tuple) {
-    }
-
-    /**
-     * Process the start of a function. This is called once per function
-     * with detailed function information.
-     * 
-     * @param functionTuple the FUNCTION tuple
-     * @param info          the function information
-     */
-    public void emitFunctionStart(Tuple functionTuple, FunctionInfo info) {
-        emitFunction(functionTuple);
-    }
-
-    /**
-     * Process the end of a function. This is called once per function
-     * with detailed function information.
-     * 
-     * @param endFunctionTuple the END_FUNCTION tuple
-     * @param info             the function information
-     */
-    public void emitFunctionEnd(Tuple endFunctionTuple, FunctionInfo info) {
-        emitEndFunction(endFunctionTuple);
-    }
-
-    /**
-     * Get the generated output code.
-     * 
-     * @return the output code
-     */
-    public StringBuilder getOutput() {
-        return output;
     }
 
     protected void emitFunction(Tuple tuple) {
@@ -180,5 +162,12 @@ public abstract class CodeGenerator {
     }
 
     protected void emitUnknown(Tuple tuple) {
+    }
+
+    /**
+     * Hook method that is called before processing a tuple.
+     * Subclasses can override this to add custom behavior.
+     */
+    protected void onEmitTuple(Tuple tuple) {
     }
 }
